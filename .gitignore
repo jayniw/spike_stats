@@ -1,9 +1,43 @@
+# Dependencies
 node_modules/
+
+# Next.js
+.next/
+out/
+next-env.d.ts
+
+# Builds
 dist/
 build/
+*.tsbuildinfo
+
+# Testing
+coverage/
+playwright-report/
+test-results/
+.blob-storage/
+
+# Python (legacy tooling)
 .venv/
 __pycache__/
 *.db
 *.sqlite
+
+# Environment
 .env
+.env*
+!.env.local.example
+
+# Supabase local
+supabase/.branches/
+supabase/.temp/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editors
 .DS_Store
+Thumbs.db
+.vscode/
+.idea/
