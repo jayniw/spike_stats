@@ -8,6 +8,15 @@
 
 **Input**: User description: "Construir SpikeStats según lo descrito en README.md"
 
+## Clarifications
+
+### Session 2026-08-23
+
+- Q: ¿Qué información de las jugadoras debe mostrar el marcador público compartible cuando se registra una acción? → A: Configurable por partido por el entrenador, con "solo dorsal y posición" como valor inicial seguro (los nombres nunca se exponen por defecto).
+- Q: ¿Los clubes necesitan cargar resultados de partidos anteriores a la app (solo resultado por sets, sin acciones) para historial y % de victorias? → A: Sí, alta manual solo-resultado; cuenta para historial y % de victorias, pero no para métricas basadas en acciones.
+- Q: ¿Qué escala de uso debe soportar la plataforma durante su primer año? → A: Hasta 50 clubes activos (~250 equipos), dentro del nivel gratuito de infraestructura.
+- Q: ¿Los analistas necesitan exportar las métricas de los dashboards (archivos o reportes) en la v1? → A: No; la exportación queda fuera de alcance explícito en v1.
+
 ## User Scenarios & Testing *(mandatory)*
 
 <!--
@@ -267,6 +276,9 @@ manual sobre sus acciones.
 - ¿Qué ocurre si se intenta atribuir una acción a una jugadora eliminada del
   roster? Las acciones históricas mantienen la referencia y las métricas; solo
   se impide atribuir acciones nuevas a jugadoras inactivas.
+- ¿La restricción de identidad pública afecta las vistas internas? No: los
+  dashboards y anotador del club siempre muestran nombres; el modo "solo
+  dorsal" aplica exclusivamente al contenido del enlace público.
 
 ## Requirements *(mandatory)*
 
@@ -306,6 +318,8 @@ manual sobre sus acciones.
   competencia y condición (local/visitante).
 - **FR-011**: System MUST gestionar estados de partido: programado → en vivo →
   finalizado (y cancelado); la anotación en vivo solo procede en "en vivo".
+  System MUST además permitir registrar directamente como "finalizado" un
+  partido ya jugado cargando únicamente su resultado por sets (sin acciones).
 - **FR-012**: Coaches MUST poder cargar/editar el resultado por sets hasta la
   finalización definitiva.
 
@@ -335,7 +349,9 @@ manual sobre sus acciones.
 
 - **FR-020**: System MUST generar un enlace público de solo lectura por
   partido en vivo que muestre marcador, set en curso y últimas acciones, sin
-  requerir cuenta.
+  requerir cuenta. La identificación de jugadoras en ese contenido es
+  configurable por partido por el entrenador; el valor inicial seguro muestra
+  únicamente dorsal y posición, nunca nombres.
 - **FR-021**: System MUST actualizar el marcador público en tiempo cercano al
   real conforme se registran acciones.
 - **FR-022**: System MUST permitir desactivar (privatizar) el enlace público;
@@ -347,7 +363,9 @@ manual sobre sus acciones.
   victorias, sets ganados/perdidos, puntos por set (PPS), eficiencia de
   ataque, ace % y errores de saque por set, recepción (% perfectas y errores),
   y bloqueos por set, con filtros por temporada/competencia y evolución
-  temporal.
+  temporal. El historial y el % de victorias incluyen los partidos cargados
+  solo-resultado; las métricas derivadas de acciones se calculan únicamente
+  sobre partidos con anotación.
 - **FR-024**: Player dashboard MUST mostrar: promedios por partido, eficiencia
   de ataque `(kills − errores) / intentos`, kill % `kills / intentos`, ace %
   y errores de saque por set, calidad de recepción (% perfectas / errores),
@@ -374,8 +392,10 @@ manual sobre sus acciones.
 - **Jugadora**: integrante de un equipo; dorsal único por equipo, posición,
   estado activo/archivada.
 - **Partido**: enfrentamiento contra un rival en fecha y competencia, con
-  condición local/visitante, estado (programado/en vivo/finalizado/cancelado)
-  y resultado por sets.
+  condición local/visitante, estado (programado/en vivo/finalizado/cancelado),
+  resultado por sets y preferencia de identidad pública de jugadoras para el
+  enlace (por defecto: solo dorsal). Puede existir sin acciones cuando se
+  carga retrospectivamente solo el resultado.
 - **Acción**: evento unitario de juego: habilidad, resultado, jugadora,
   partido/set asociado, número de orden; base de todas las métricas.
 - **Enlace público**: token de solo lectura asociado a un partido en curso,
@@ -403,6 +423,10 @@ manual sobre sus acciones.
   ~20 partidos y 12 jugadoras.
 - **SC-008**: Todas las métricas de dashboards coinciden 100% con el cálculo
   manual de referencia sobre las mismas acciones (suite de validación).
+- **SC-009**: La plataforma mantiene los objetivos de SC-001 a SC-004 y los
+  tiempos de respuesta de dashboards con hasta 50 clubes activos (~250
+  equipos) y 10 partidos anotándose en vivo en simultáneo, sin exceder
+  infraestructura gratuita.
 
 ## Assumptions
 
@@ -420,5 +444,7 @@ manual sobre sus acciones.
 - El enlace público no requiere cuenta y es revocable marcando el partido
   como privado.
 - Idioma inicial de la interfaz: español.
+- La exportación de métricas (CSV, PDF, reportes) queda fuera de alcance en
+  v1: los dashboards son la única superficie analítica.
 - Restricción de costos: operar dentro de niveles gratuitos de hosting y
   base de datos, según constitución del proyecto (Principio V).
