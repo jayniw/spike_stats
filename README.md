@@ -75,3 +75,69 @@ y evitar funciones serverless de larga duración.
 - Apps móviles nativas (la PWA mobile-first cubre la anotación en cancha)
 - Análisis de video
 - Facturación/suscripciones (el modelo multi-tenant se diseña ya, pero sin cobros)
+
+## SpikeStats MVP
+
+Plataforma multi-tenant de estadísticas en vivo para voleibol: permite a los
+clubes gestionar equipos y jugadores, anotar partidos desde el teléfono con un
+toque por jugada (tolerante a cortes de red), compartir un marcador público en
+tiempo real y analizar el rendimiento mediante dashboards de equipo y jugador.
+La especificación completa del MVP está en
+[specs/001-spikestats-mvp/spec.md](specs/001-spikestats-mvp/spec.md).
+
+### Requisitos
+
+- Node.js 20 LTS o superior + npm
+- Docker Desktop (para el stack local de Supabase)
+- Supabase CLI (última versión estable)
+
+### Configuración
+
+1. Instala dependencias:
+
+   ```powershell
+   npm ci        # o: npm install
+   ```
+
+2. Variables de entorno: copia `.env.local.example` a `.env.local` y completa
+   los valores.
+
+   ```powershell
+   Copy-Item .env.local.example .env.local
+   ```
+
+   Con Supabase local: `url` = `http://127.0.0.1:54321` y la anon key que
+   imprime `supabase status`.
+
+3. Levanta el stack local y aplica migraciones:
+
+   ```powershell
+   supabase start      # Postgres + Auth + Realtime locales
+   supabase db reset   # aplica supabase/migrations (schema + RLS)
+   ```
+
+4. Carga datos demo (club, usuarios por rol y temporada con partidos):
+
+   ```powershell
+   npm run seed:demo
+   ```
+
+5. Arranca en desarrollo:
+
+   ```powershell
+   npm run dev         # http://localhost:3000
+   ```
+
+### Cuentas de prueba (fixture)
+
+El seed crea usuarios por rol en el club demo: `admin@demo.club`,
+`coach@demo.club`, `analyst@demo.club`, `player@demo.club`. Las contraseñas se
+imprimen al ejecutar el seed.
+
+### Quality gates
+
+```powershell
+npm run lint && npm run typecheck && npm run test && npm run test:e2e
+```
+
+Todos deben pasar en verde antes de cualquier merge.
