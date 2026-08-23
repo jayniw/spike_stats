@@ -32,11 +32,11 @@ Single unified Next.js app (plan.md Structure Decision): `app/`, `components/`,
 
 **Purpose**: Project initialization and toolchain
 
-- [ ] T001 Scaffold Next.js App Router project with TypeScript strict mode creating directories per plan.md: `app/(auth)/`, `app/(club)/`, `app/m/[token]/`, `app/api/public/match/[token]/`, `components/`, `lib/{db,metrics,offline,scoring,validation,auth}`, `supabase/migrations/`, `tests/{unit,contract,integration,e2e}/`
-- [ ] T002 [P] Configure Tailwind CSS + shadcn/ui baseline and Spanish locale defaults in `app/layout.tsx`
-- [ ] T003 [P] Add lint/format/typecheck scripts (`npm run lint|typecheck`) with ESLint + Prettier configs at repo root
-- [ ] T004 [P] Set up Vitest (`vitest.config.ts`) and Playwright (`playwright.config.ts` with mobile viewport 360×800 project) plus npm scripts `test`, `test:e2e`
-- [ ] T005 [P] Create environment template `.env.local.example` (SUPABASE_URL, SUPABASE_ANON_KEY) and document setup steps from `specs/001-spikestats-mvp/quickstart.md` in README
+- [X] T001 Scaffold Next.js App Router project with TypeScript strict mode creating directories per plan.md: `app/(auth)/`, `app/(club)/`, `app/m/[token]/`, `app/api/public/match/[token]/`, `components/`, `lib/{db,metrics,offline,scoring,validation,auth}`, `supabase/migrations/`, `tests/{unit,contract,integration,e2e}/`
+- [X] T002 [P] Configure Tailwind CSS + shadcn/ui baseline and Spanish locale defaults in `app/layout.tsx`
+- [X] T003 [P] Add lint/format/typecheck scripts (`npm run lint|typecheck`) with ESLint + Prettier configs at repo root
+- [X] T004 [P] Set up Vitest (`vitest.config.ts`) and Playwright (`playwright.config.ts` with mobile viewport 360×800 project) plus npm scripts `test`, `test:e2e`
+- [X] T005 [P] Create environment template `.env.local.example` (SUPABASE_URL, SUPABASE_ANON_KEY) and document setup steps from `specs/001-spikestats-mvp/quickstart.md` in README
 
 **Checkpoint**: Toolchain ready — `npm run typecheck && npm run test` green on empty suites
 
