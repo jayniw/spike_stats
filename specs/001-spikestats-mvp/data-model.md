@@ -117,8 +117,9 @@ other writes append-only.
 ## State machines
 
 **Match**: `scheduled → live → finished`; `scheduled → cancelled`;
-`live → finished`. Only `live` accepts new actions; result editing allowed
-until `finished` is confirmed by coach (FR-012).
+`live → finished`; `finished → live` (reapertura, solo club_admin/coach).
+Solo `live` acepta nuevas acciones y correcciones; el resultado por sets se
+edita en `scheduled`/`live`; en `finished` exige reapertura previa (FR-012).
 
 **Membership**: `invited → active → revoked`.
 

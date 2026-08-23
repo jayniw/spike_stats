@@ -50,9 +50,9 @@ Single unified Next.js app (plan.md Structure Decision): `app/`, `components/`,
 
 - [ ] T006 Initialize Supabase project (`supabase/config.toml`) and write migration `supabase/migrations/0001_organizations_memberships.sql`: tables `organizations`, `memberships`, `invites` with enums (`membership_role`, `membership_status`), RLS ENABLED + policies per `contracts/rls-access-matrix.md` rows for those resources
 - [ ] T007 [P] Implement typed Supabase clients `lib/db/client.ts` (browser + server via `@supabase/ssr`)
-- [ ] T008 [P] Build RLS contract-test harness `tests/contract/rls-harness.ts` (fixture users in each role across TWO clubs, real JWTs against local Supabase) + suite `tests/contract/rls-core.spec.ts` proving matrix cells and explicit cross-org denial for 0001 tables
+- [ ] T008 [P] Build RLS contract-test harness `tests/contract/rls-harness.ts` (fixture users in each role across TWO clubs, real JWTs against local Supabase) + suite `tests/contract/rls-core.spec.ts` proving matrix cells and explicit cross-org denial for 0001 tables, including a dual-membership case: same user active in two clubs with different roles, isolation verified in both directions (FR-005)
 - [ ] T009 [P] Create Zod schemas `lib/validation/core.ts` (role enum, invite email/token, membership transitions)
-- [ ] T010 [P] Write demo seed `scripts/seed-demo.ts`: two clubs, users for all five roles, printed passwords (quickstart prerequisites)
+- [ ] T010 [P] Write demo seed `scripts/seed-demo.ts`: two clubs, users for all five roles, and a demo season fixture (20 matches incl. 3 result-only entries with set scores plus action distributions reproducing `contracts/metrics.md` golden values); printed passwords (quickstart prerequisites)
 - [ ] T011 Implement auth entry `app/(auth)/entrar/page.tsx` (magic-link + password via Supabase Auth) and session guard layout `app/(club)/layout.tsx` redirecting unauthenticated users
 - [ ] T012 [P] Establish empty/error/loading state conventions with shadcn wrappers in `components/ui/states.tsx` and toast provider in `app/layout.tsx`
 
@@ -69,6 +69,7 @@ Single unified Next.js app (plan.md Structure Decision): `app/`, `components/`,
 ### Tests for User Story 1 (write FIRST, must FAIL)
 
 - [ ] T013 [P] [US1] E2E `tests/e2e/onboarding.spec.ts`: create club → invite spectator → assert restricted nav and denied direct URLs (V1 flow)
+- [ ] T018 [P] [US1] Contract tests `tests/contract/rls-memberships.spec.ts`: coach may invite only analyst/player/spectator; analyst cannot manage memberships; all cross-org denials (matrix rows)
 
 ### Implementation for User Story 1
 
@@ -76,7 +77,6 @@ Single unified Next.js app (plan.md Structure Decision): `app/`, `components/`,
 - [ ] T015 [US1] Members management `app/(club)/ajustes/miembros/page.tsx` listing memberships with role change and revoke actions (admin-only, FR-002/FR-003)
 - [ ] T016 [US1] Invitations `app/(club)/ajustes/invitaciones/page.tsx` + acceptance route `app/(auth)/aceptar/[token]/page.tsx` consuming `invites` tokens with expiry (FR-002, research D7)
 - [ ] T017 [US1] Server-side role guards `lib/auth/guards.ts` (`requireRole(...roles)`) used by all `(club)` mutations (FR-003)
-- [ ] T018 [P] [US1] Contract tests `tests/contract/rls-memberships.spec.ts`: coach may invite only analyst/player/spectator; analyst cannot manage memberships; all cross-org denials (matrix rows)
 - [ ] T019 [US1] Wire club-shell navigation `app/(club)/layout.tsx` nav with role-filtered links and Spanish labels
 
 **Checkpoint**: US1 fully functional alone: club exists, roles enforced, isolation proven
@@ -114,7 +114,7 @@ Single unified Next.js app (plan.md Structure Decision): `app/`, `components/`,
 
 ### Tests for User Story 3 (write FIRST, must FAIL)
 
-- [ ] T027 [P] [US3] Contract tests `tests/contract/matches.spec.ts`: coach/analyst insert+edit allowed, player/spectator denied; retrospective `finished` row without actions accepted; cancelled match rejects activation
+- [ ] T027 [P] [US3] Contract tests `tests/contract/matches.spec.ts`: coach/analyst insert+edit allowed while scheduled/live, player/spectator denied; result edits denied once `finished` unless reopened; reopen `finished→live` allowed for coach/admin and denied for analyst (matrix footnote ³); retrospective `finished` row without actions accepted; cancelled match rejects activation
 
 ### Implementation for User Story 3
 
@@ -123,7 +123,7 @@ Single unified Next.js app (plan.md Structure Decision): `app/`, `components/`,
 - [ ] T030 [P] [US3] Zod schemas `lib/validation/matches.ts` (rival/date/competition free-label rules, set scores 0–99)
 - [ ] T031 [US3] Matches list `app/(club)/partidos/page.tsx` with state badges and filters
 - [ ] T032 [US3] Match detail `app/(club)/partidos/[matchId]/page.tsx`: edit result-by-sets form + retrospective "cargar finalizado sin acciones" mode (Clarification Q2, FR-011/FR-012)
-- [ ] T033 [US3] Share-link block in match detail: copyable URL + privacy toggle bound to `share_enabled` (UI half of FR-022; enforcement lands in US5 T047)
+- [ ] T033 [US3] Share-link block in match detail `app/(club)/partidos/[matchId]/page.tsx`: copyable URL, privacy toggle bound to `share_enabled`, and per-match identity selector (`dorsal_only` default ↔ `full_name`) bound to `identity_mode` (FR-020, FR-022; enforcement lands in US5 T047)
 
 **Checkpoint**: P1 stories complete — platform usable for records; ready for live scoring
 
@@ -148,7 +148,7 @@ Single unified Next.js app (plan.md Structure Decision): `app/`, `components/`,
 - [ ] T039 [US4] Live scoring screen `app/(club)/partidos/[matchId]/vivo/page.tsx`: thumb-zone pad, ≥48px targets, skill→player→outcome flow, undo/correct affordances (FR-016/FR-017)
 - [ ] T040 [US4] Single-scorer session claim `lib/scoring/session.ts`: claims live slot on start, second device gets read-only notice (FR-019)
 - [ ] T041 [US4] Realtime hook `hooks/use-live-match.ts`: subscribes match actions + set_scores changes feeding score header and recent-actions strip
-- [ ] T042 [US4] E2E `tests/e2e/scoring.spec.ts` at mobile viewport: schedule→live→record→undo→close-set assertions (quickstart V3 automation)
+- [ ] T042 [US4] E2E `tests/e2e/scoring.spec.ts` at mobile viewport: schedule→live→record→undo→close-set assertions (quickstart V3 automation); asserts tap→capture-confirmed latency ≤2 s p95 over 20 scripted actions (SC-001)
 
 **Checkpoint**: Core differentiator works end-to-end online
 
@@ -166,7 +166,7 @@ Single unified Next.js app (plan.md Structure Decision): `app/`, `components/`,
 
 ### Implementation for User Story 5
 
-- [ ] T044 [US5] Migration `supabase/migrations/0005_public_events.sql`: `public_match_events` mirror table (token-keyed anonymous SELECT policy — sole anonymous grant, base tables stay closed) + trigger populating from `match_actions`/set closes
+- [ ] T044 [US5] Migration `supabase/migrations/0005_public_events.sql`: `public_match_events` mirror table (token-keyed anonymous SELECT policy — sole anonymous grant, base tables stay closed) + trigger populating from `match_actions`/set closes + `public_match_snapshot(token)` security-definer function returning the contract-shaped snapshot honoring `identity_mode`
 - [ ] T045 [US5] Route handler `app/api/public/match/[token]/route.ts` returning snapshot JSON exactly per contract (security-definer lookup, identity_mode shaping)
 - [ ] T046 [US5] Public page `app/m/[token]/page.tsx`: scoreboard, set tracker, recent actions; subscribes `public_match_events` channel; handles `set_closed` events; Spanish UI
 - [ ] T047 [US5] Revocation integration: flipping `share_enabled` (T033 toggle) immediately yields 403 on route + page; contract test extension in `tests/contract/public-snapshot.spec.ts`
@@ -184,7 +184,7 @@ Single unified Next.js app (plan.md Structure Decision): `app/`, `components/`,
 
 ### Tests for User Story 6 (write FIRST, must FAIL)
 
-- [ ] T049 [P] [US6] Contract tests `tests/contract/offline-sync.spec.ts` per `contracts/sync.md`: replay twice → exactly N rows contiguous seq; capture order preserved; validation-rejected item quarantined visibly
+- [ ] T049 [P] [US6] Contract tests `tests/contract/offline-sync.spec.ts` per `contracts/sync.md`: replay twice → exactly N rows contiguous seq; capture order preserved; validation-rejected item quarantined visibly; second-device claim while a session is active returns read-only mode (FR-019)
 
 ### Implementation for User Story 6
 

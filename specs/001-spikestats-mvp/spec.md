@@ -266,8 +266,9 @@ manual sobre sus acciones.
   por partido; el segundo dispositivo recibe un aviso claro y modo solo
   lectura.
 - ¿Qué ocurre si se registran acciones después de finalizar el partido? El
-  sistema bloquea nuevas acciones tras la finalización; correcciones requieren
-  reabrir el partido explícitamente (rol entrenador/analista).
+  sistema bloquea nuevas acciones tras la finalización; correcciones y
+  cambios de resultado requieren reabrir el partido explícitamente
+  (`finalizado → en vivo`, rol entrenador o administrador).
 - ¿Qué ocurre si un rival tiene el mismo nombre que otro ya registrado? Los
   rivales son etiquetas libres por partido; no se exige unicidad.
 - ¿Qué ocurre con el enlace público de un partido cancelado? El enlace muestra
@@ -292,9 +293,10 @@ manual sobre sus acciones.
   cada membresía exactamente uno de estos roles: administrador de club,
   entrenador, analista, jugadora, espectador.
 - **FR-003**: System MUST aplicar permisos por rol: solo administradores
-  gestionan membresías; solo entrenadores y analistas registran/editan
-  partidos y acciones; jugadoras y espectadores solo visualizan contenido
-  permitido.
+  gestionan membresías; solo entrenadores y analistas registran partidos,
+  cargan resultados y registran acciones en vivo; corregir o deshacer
+  acciones ya registradas es exclusivo de entrenadores y administradores;
+  jugadoras y espectadores solo visualizan contenido permitido.
 - **FR-004**: System MUST garantizar aislamiento total entre clubes: ningún
   usuario, sea cual fuere su rol o el medio de acceso (navegación, URL
   directa, enlace), puede ver o modificar datos de otro club.
@@ -320,8 +322,10 @@ manual sobre sus acciones.
   finalizado (y cancelado); la anotación en vivo solo procede en "en vivo".
   System MUST además permitir registrar directamente como "finalizado" un
   partido ya jugado cargando únicamente su resultado por sets (sin acciones).
-- **FR-012**: Coaches MUST poder cargar/editar el resultado por sets hasta la
-  finalización definitiva.
+- **FR-012**: Coaches MUST poder cargar/editar el resultado por sets mientras
+  el partido esté `programado` o `en vivo`; una vez `finalizado`, todo cambio
+  de resultado exige reabrirlo explícitamente (`finalizado → en vivo`),
+  transición reservada a entrenador o administrador.
 
 **Anotación en vivo**
 

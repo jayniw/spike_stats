@@ -30,15 +30,20 @@ Roles: `club_admin`, `coach`, `analyst`, `player`, `spectator`
 
 ¹ Coach may invite only roles below their own (`analyst`, `player`,
 `spectator`) — never `club_admin`.
-² Analyst may register/edit results and score actions but may not correct
-(rewrite) recorded actions.
+² Analyst may register results and score actions into an already-`live`
+match but may not correct (rewrite) recorded actions.
+³ State transitions entering/leaving `live` (start, reopen) and finishing
+are restricted to club_admin/coach.
 
 **Anonymous (no JWT)**:
 - Base tables: DENY all. No anonymous policy exists on any table.
-- Public read path is exclusively `public_match_snapshot(token)` — a
-  security-definer function returning only published-match fields honoring
-  `identity_mode` (see `public-scoreboard-api.md`). Revoked/cancelled → empty
-  snapshot.
+- Public read paths (the ONLY anonymous grants):
+  - `public_match_snapshot(token)` — security-definer function returning only
+    published-match fields honoring `identity_mode` (see
+    `public-scoreboard-api.md`). Revoked/cancelled → empty snapshot.
+  - `public_match_events` mirror table — token-keyed anonymous SELECT for
+    realtime updates; rows written only by trigger from `match_actions`.
+    Revoked/cancelled → zero rows.
 
 **Invariants tested on every migration touching schema or policies**:
 1. Every table has RLS enabled; `FORCE ROW LEVEL SECURITY` for owner paths.

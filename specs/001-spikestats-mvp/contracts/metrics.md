@@ -53,7 +53,7 @@ SC-008). Terms: `skill ∈ {serve, reception, set_pass, attack, block, dig}`,
 
 Fixture match: 3 sets won 25-20/25-22/25-19. Actions:
 attacks 40 → kills 18, errors 7 (15 continue); serves 45 → aces 5, errors 9;
-receptions 30 → perfect 21, errors 4 (5 not rated¹); blocks 6 points.
+receptions 25 → perfect 21, errors 4; blocks 6 points.
 
 | Metric | Expected value |
 |---|---|
@@ -64,10 +64,6 @@ receptions 30 → perfect 21, errors 4 (5 not rated¹); blocks 6 points.
 | Saque errores/set | 9/3 = **3.000** |
 | Recepción % perfectas | 21/25 = **0.84** |
 | Bloqueos por set | 6/3 = **2.000** |
-
-¹ Reception outcomes are binary in v1 (`perfect`=rally_continues /
-`error`); unrated receptions occur when outcome recorded as neither — kept
-out of both numerator and denominator.
 
 Rounding: percentages displayed to 1 decimal, efficiencies to 3; raw values
 never rounded before aggregation.
