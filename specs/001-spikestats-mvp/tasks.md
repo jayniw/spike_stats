@@ -48,13 +48,27 @@ Single unified Next.js app (plan.md Structure Decision): `app/`, `components/`,
 
 **⚠ CRITICAL**: No user story work until this phase completes
 
-- [ ] T006 Initialize Supabase project (`supabase/config.toml`) and write migration `supabase/migrations/0001_organizations_memberships.sql`: tables `organizations`, `memberships`, `invites` with enums (`membership_role`, `membership_status`), RLS ENABLED + policies per `contracts/rls-access-matrix.md` rows for those resources
+- [X] T006 Initialize Supabase project (`supabase/config.toml`) and write migration `supabase/migrations/0001_organizations_memberships.sql`: tables `organizations`, `memberships`, `invites` with enums (`membership_role`, `membership_status`), RLS ENABLED + policies per `contracts/rls-access-matrix.md` rows for those resources
 - [ ] T007 [P] Implement typed Supabase clients `lib/db/client.ts` (browser + server via `@supabase/ssr`)
 - [ ] T008 [P] Build RLS contract-test harness `tests/contract/rls-harness.ts` (fixture users in each role across TWO clubs, real JWTs against local Supabase) + suite `tests/contract/rls-core.spec.ts` proving matrix cells and explicit cross-org denial for 0001 tables, including a dual-membership case: same user active in two clubs with different roles, isolation verified in both directions (FR-005)
-- [ ] T009 [P] Create Zod schemas `lib/validation/core.ts` (role enum, invite email/token, membership transitions)
-- [ ] T010 [P] Write demo seed `scripts/seed-demo.ts`: two clubs, users for all five roles, and a demo season fixture (20 matches incl. 3 result-only entries with set scores plus action distributions reproducing `contracts/metrics.md` golden values); printed passwords (quickstart prerequisites)
+- [X] T009 [P] Create Zod schemas `lib/validation/core.ts` (role enum, invite email/token, membership transitions)
+- [X] T010 [P] Write demo seed `scripts/seed-demo.ts`: two clubs, users for all five roles, and a demo season fixture (20 matches incl. 3 result-only entries with set scores plus action distributions reproducing `contracts/metrics.md` golden values); printed passwords (quickstart prerequisites)
 - [ ] T011 Implement auth entry `app/(auth)/entrar/page.tsx` (magic-link + password via Supabase Auth) and session guard layout `app/(club)/layout.tsx` redirecting unauthenticated users
-- [ ] T012 [P] Establish empty/error/loading state conventions with shadcn wrappers in `components/ui/states.tsx` and toast provider in `app/layout.tsx`
+- [X] T012 [P] Establish empty/error/loading state conventions with shadcn wrappers in `components/ui/states.tsx` and toast provider in `app/layout.tsx`
+
+### ⏸ ESTADO DE EJECUCIÓN — pausado por reinicio de PC (virtualización/Docker)
+
+Completadas y **commiteadas**: Fase 1 completa (T001–T005); Fase 2:
+T006 ✓, T009 ✓, T010 ✓, T012 ✓. `npm run typecheck` verde en el árbol
+actual. No repetir tareas marcadas `[X]`.
+
+**Al reanudar (con Docker funcionando):**
+1. `npx supabase start` → si falla health-check EOF tras arranque en frío,
+   reintentar (`npx supabase stop --no-backup` antes si hace falta).
+2. `npx supabase db reset` — valida que la migración 0001 (T006) aplique limpia.
+3. Ejecutar **T007** (`lib/db/client.ts` — NO requiere Docker; puede ir en paralelo al paso 1).
+4. Ejecutar **T008** (harness RLS — requiere pasos 1–2 completos y DB arriba).
+5. Continuar con **T011** y luego el checkpoint de Fase 2.
 
 **Checkpoint**: Foundation ready — RLS harness green, login works, stories can start in parallel
 
