@@ -62,7 +62,7 @@ export default function EntrarPage() {
 
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: `${location.origin}/entrar` },
+      options: { emailRedirectTo: `${location.origin}/login` },
     });
     setCargando(false);
     if (error) {

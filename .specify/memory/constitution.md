@@ -1,11 +1,11 @@
 <!--
 === Sync Impact Report ===
-Version change: unratified scaffold -> 1.0.0 (initial ratification)
-Modified principles: none (all newly ratified)
-Added sections: Core Principles (I-V); Technology Stack & Constraints;
-  Development Workflow & Quality Gates; Governance
-Removed sections: none (template comments removed after replacement)
-Follow-up TODOs: none
+Version change: 1.0.0 -> 1.1.0 (added Principle VI + pnpm constraint)
+Modified principles: none (I-V unchanged)
+Added sections: Core Principle VI (English-First Routing);
+  pnpm to Technology Stack & Constraints
+Removed sections: none
+Follow-up TODOs: migrate existing Spanish routes to English (Phase 3 pre-flight)
 ===
 -->
 
@@ -66,6 +66,14 @@ functions MUST be avoided; prefer client-side computation and indexed queries
 over backend batch jobs. Rationale: the project operates within zero-cost
 infrastructure until validated; premature scale engineering is waste.
 
+### VI. English-First Routing Convention (NON-NEGOTIABLE)
+
+All Next.js App Router directory names and URL segments MUST be in English.
+Spanish labels belong only in UI text (translated via i18n or hardcoded
+strings), never in route paths. Rationale: URL stability, SEO, consistency
+with developer tooling that assumes ASCII paths, and avoidance of encoding
+issues across environments.
+
 ## Technology Stack & Constraints
 
 | Layer | Technology | Notes |
@@ -75,6 +83,7 @@ infrastructure until validated; premature scale engineering is waste.
 | Backend/Data | Supabase | Postgres + Auth + RLS + Realtime; respect free-tier limits |
 | Deployment | Vercel | Free tier, preview per PR |
 | Charts | Recharts | Team and player dashboards |
+| Package Manager | pnpm | Enforced; no npm/yarn lock files committed |
 
 Constraints:
 
@@ -83,6 +92,11 @@ Constraints:
 - All features MUST function within free-tier quotas; pausing-by-inactivity
   of the Supabase project is an accepted operational reality, so local-first
   persistence (Principle III) is required, not optional.
+- Package management MUST use pnpm. `pnpm-lock.yaml` is the only permitted
+  lock file. CI, scripts, and developer docs reference `pnpm` exclusively.
+- File naming: all source files in English, kebab-case for multi-word names
+  (e.g. `client-browser.ts`, `rls-harness.ts`). No Spanish filenames.
+  Component files may use PascalCase when exporting a single React component.
 - New stack additions require a constitution amendment (see Governance).
 
 ## Development Workflow & Quality Gates
@@ -120,4 +134,4 @@ decisions in the repository.
 - Runtime development guidance lives in `.specify/` templates and specs; this
   file governs, it does not prescribe implementation detail.
 
-**Version**: 1.0.0 | **Ratified**: 2026-08-23 | **Last Amended**: 2026-08-23
+**Version**: 1.1.0 | **Ratified**: 2026-08-23 | **Last Amended**: 2026-08-30

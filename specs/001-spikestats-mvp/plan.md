@@ -52,7 +52,9 @@ no standalone backend service).
 
 **Constraints**: Zero-cost infrastructure (Supabase free tier ~500 MB DB,
 Vercel free tier); no long-running server processes; total organization
-isolation (non-negotiable); Spanish UI; offline-capable live scoring.
+isolation (non-negotiable); Spanish UI; offline-capable live scoring;
+pnpm as sole package manager; English route segments (constitution VI);
+English kebab-case file names (e.g. `client-browser.ts`, `actions.ts`).
 
 **Scale/Scope**: Up to 50 active clubs (~250 teams, ~3,000 players, ~5,000
 matches/year, ~750k action rows/year) and 10 concurrently scored live
@@ -69,6 +71,7 @@ matches — comfortably within free-tier budgets (SC-009).
 | III | Offline Resilience & Realtime Sync | PASS | Append-only `match_actions` log with idempotency key (`client_action_id` UNIQUE); IndexedDB outbox drains on reconnect with zero-loss/zero-duplicate semantics (`contracts/sync.md`); Supabase Realtime pushes to dashboards/public board (<5 s). |
 | IV | Test-First Development (NON-NEGOTIABLE) | PASS | TDD enforced in workflow; metric formulas specified as executable contracts (`contracts/metrics.md`) with golden-value Vitest suites; RLS contract-test suite mandated per migration. |
 | V | Simplicity & Free-Tier Discipline | PASS | No backend service added; dependencies beyond constitution stack individually justified (research.md); read-time metric computation + indexed queries instead of batch jobs; volume estimates fit free tier; no long-running functions. |
+| VI | English-First Routing Convention (NON-NEGOTIABLE) | PASS | All route directories use English names (teams/, matches/, dashboards/, settings/); Spanish UI text only in labels/strings; migration plan defined in Phase 2.5 pre-flight tasks. |
 
 **Gate result**: PASS — no violations. Complexity Tracking table stays empty.
 Post-Phase-1 re-check: PASS (design introduces no new services, no
@@ -98,11 +101,11 @@ specs/001-spikestats-mvp/
 app/                          # Next.js App Router
 ├── (auth)/                   # login, signup, invite acceptance
 ├── (club)/                   # authenticated, org-scoped area
-│   ├── equipos/              # teams & rosters
-│   ├── partidos/             # matches list/detail/result entry
-│   │   └── [matchId]/vivo/   # live scoring screen (mobile-first)
-│   ├── tableros/             # team & player dashboards
-│   └── ajustes/              # members, invites, roles
+│   ├── teams/                # teams & rosters
+│   ├── matches/              # matches list/detail/result entry
+│   │   └── [matchId]/live/   # live scoring screen (mobile-first)
+│   ├── dashboards/           # team & player dashboards
+│   └── settings/             # members, invites, roles
 ├── m/[token]/                # public read-only scoreboard page
 └── api/
     └── public/match/[token]/ # public scoreboard JSON contract

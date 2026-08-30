@@ -81,6 +81,21 @@ No repetir tareas marcadas `[X]`.
 
 ---
 
+## Phase 2.5: Pre-Flight (Conventions Enforcement)
+
+**Purpose**: Enforce constitution Principles V (pnpm) and VI (English routing) before building new features on top of them
+
+**⚠ CRITICAL**: These tasks MUST complete before Phase 3 implementation starts
+
+- [X] T012B [P] Migrate all route directories from Spanish to English per constitution Principle VI: `app/(auth)/entrar/` → `app/(auth)/login/`, `app/(club)/equipos/` → `app/(club)/teams/`, `app/(club)/partidos/` → `app/(club)/matches/`, `app/(club)/tableros/` → `app/(club)/dashboards/`, `app/(club)/ajustes/` → `app/(club)/settings/`, `app/(auth)/aceptar/` → `app/(auth)/accept/`
+- [X] T012C [P] Update all internal links, redirects, and router.push() calls to reference new English routes across `app/` and `components/`
+- [X] T012D [P] Update `specs/001-spikestats-mvp/plan.md` Project Structure section to reflect English routes and verify pnpm is the sole package manager (remove any npm/yarn artifacts if present)
+- [X] T012E [P] Enforce file naming convention: all source files in English, kebab-case for multi-word names (e.g. `client-browser.ts`, `rls-harness.ts`); rename `app/(auth)/login/acciones.ts` → `actions.ts`; document convention in plan.md Constraints
+
+**Checkpoint**: Conventions enforced — all routes English, pnpm confirmed, Phase 3 can build on stable foundation
+
+---
+
 ## Phase 3: User Story 1 — Crear club e invitar miembros con roles (P1) — MVP
 
 **Goal**: Admin creates a club, invites members by email with one of five roles; permissions enforced; total cross-org isolation
@@ -94,9 +109,9 @@ No repetir tareas marcadas `[X]`.
 
 ### Implementation for User Story 1
 
-- [ ] T014 [US1] Club creation onboarding `app/(onboarding)/nuevo-club/page.tsx` + server action inserting `organizations` + admin `membership` atomically
-- [ ] T015 [US1] Members management `app/(club)/ajustes/miembros/page.tsx` listing memberships with role change and revoke actions (admin-only, FR-002/FR-003)
-- [ ] T016 [US1] Invitations `app/(club)/ajustes/invitaciones/page.tsx` + acceptance route `app/(auth)/aceptar/[token]/page.tsx` consuming `invites` tokens with expiry (FR-002, research D7)
+- [ ] T014 [US1] Club creation onboarding `app/(onboarding)/new-club/page.tsx` + server action inserting `organizations` + admin `membership` atomically
+- [ ] T015 [US1] Members management `app/(club)/settings/members/page.tsx` listing memberships with role change and revoke actions (admin-only, FR-002/FR-003)
+- [ ] T016 [US1] Invitations `app/(club)/settings/invitations/page.tsx` + acceptance route `app/(auth)/accept/[token]/page.tsx` consuming `invites` tokens with expiry (FR-002, research D7)
 - [ ] T017 [US1] Server-side role guards `lib/auth/guards.ts` (`requireRole(...roles)`) used by all `(club)` mutations (FR-003)
 - [ ] T019 [US1] Wire club-shell navigation `app/(club)/layout.tsx` nav with role-filtered links and Spanish labels
 
@@ -119,7 +134,7 @@ No repetir tareas marcadas `[X]`.
 
 - [ ] T022 [US2] Migration `supabase/migrations/0002_teams_players.sql`: `teams`, `players` (partial UNIQUE(team_id,number) WHERE archived_at IS NULL), RLS policies per matrix
 - [ ] T023 [US2] Queries `lib/db/teams.ts`: list/create/archive team, roster CRUD, duplicate-dorsal error mapping
-- [ ] T024 [US2] Pages `app/(club)/equipos/page.tsx` (list/create) and `app/(club)/equipos/[teamId]/page.tsx` (roster editor with position/dorsal forms using `lib/validation/players.ts`)
+- [ ] T024 [US2] Pages `app/(club)/teams/page.tsx` (list/create) and `app/(club)/teams/[teamId]/page.tsx` (roster editor with position/dorsal forms using `lib/validation/players.ts`)
 - [ ] T025 [US2] Archive/deactivate player flows preserving historic action attribution display notes (FR-009) in roster UI + queries
 - [ ] T026 [P] [US2] Reusable roster picker `components/rostero/selector-jugadora.tsx` exported for later scoring screens (US4 dependency-free usage)
 
@@ -142,9 +157,9 @@ No repetir tareas marcadas `[X]`.
 - [ ] T028 [US3] Migration `supabase/migrations/0003_matches_sets.sql`: `matches` (status enum, `identity_mode` default `dorsal_only`, `share_token` unguessable, `share_enabled`) + `set_scores` UNIQUE(match_id,set_number), RLS policies
 - [ ] T029 [US3] Queries `lib/db/matches.ts`: create/list (filters season/competition/state), result entry, state transitions per data-model machine
 - [ ] T030 [P] [US3] Zod schemas `lib/validation/matches.ts` (rival/date/competition free-label rules, set scores 0–99)
-- [ ] T031 [US3] Matches list `app/(club)/partidos/page.tsx` with state badges and filters
-- [ ] T032 [US3] Match detail `app/(club)/partidos/[matchId]/page.tsx`: edit result-by-sets form + retrospective "cargar finalizado sin acciones" mode (Clarification Q2, FR-011/FR-012)
-- [ ] T033 [US3] Share-link block in match detail `app/(club)/partidos/[matchId]/page.tsx`: copyable URL, privacy toggle bound to `share_enabled`, and per-match identity selector (`dorsal_only` default ↔ `full_name`) bound to `identity_mode` (FR-020, FR-022; enforcement lands in US5 T047)
+- [ ] T031 [US3] Matches list `app/(club)/matches/page.tsx` with state badges and filters
+- [ ] T032 [US3] Match detail `app/(club)/matches/[matchId]/page.tsx`: edit result-by-sets form + retrospective "cargar finalizado sin acciones" mode (Clarification Q2, FR-011/FR-012)
+- [ ] T033 [US3] Share-link block in match detail `app/(club)/matches/[matchId]/page.tsx`: copyable URL, privacy toggle bound to `share_enabled`, and per-match identity selector (`dorsal_only` default ↔ `full_name`) bound to `identity_mode` (FR-020, FR-022; enforcement lands in US5 T047)
 
 **Checkpoint**: P1 stories complete — platform usable for records; ready for live scoring
 
@@ -166,7 +181,7 @@ No repetir tareas marcadas `[X]`.
 - [ ] T036 [US4] Migration `supabase/migrations/0004_match_actions.sql`: append-only `match_actions` (UUIDv7 PK, UNIQUE `client_action_id`, bigserial `seq`, legality CHECK, insert policy requiring `live` status + coach/analyst role)
 - [ ] T037 [US4] Pure scoring engine `lib/scoring/engine.ts`: reduce(actions) → per-set scores, set-close events, current set (passes T034 goldens)
 - [ ] T038 [US4] Capture layer `lib/scoring/capture.ts`: builds action envelope with `client_action_id` UUIDv7 and performs idempotent insert (ON CONFLICT DO NOTHING path; offline routing arrives in US6)
-- [ ] T039 [US4] Live scoring screen `app/(club)/partidos/[matchId]/vivo/page.tsx`: thumb-zone pad, ≥48px targets, skill→player→outcome flow, undo/correct affordances (FR-016/FR-017)
+- [ ] T039 [US4] Live scoring screen `app/(club)/matches/[matchId]/live/page.tsx`: thumb-zone pad, ≥48px targets, skill→player→outcome flow, undo/correct affordances (FR-016/FR-017)
 - [ ] T040 [US4] Single-scorer session claim `lib/scoring/session.ts`: claims live slot on start, second device gets read-only notice (FR-019)
 - [ ] T041 [US4] Realtime hook `hooks/use-live-match.ts`: subscribes match actions + set_scores changes feeding score header and recent-actions strip
 - [ ] T042 [US4] E2E `tests/e2e/scoring.spec.ts` at mobile viewport: schedule→live→record→undo→close-set assertions (quickstart V3 automation); asserts tap→capture-confirmed latency ≤2 s p95 over 20 scripted actions (SC-001)
@@ -212,7 +227,7 @@ No repetir tareas marcadas `[X]`.
 - [ ] T050 [US6] Outbox store `lib/offline/outbox.ts`: IndexedDB queue, UUIDv7 ids, per-item sync state (`pending|synced|quarantined`)
 - [ ] T051 [US6] Local-first capture: reroute `lib/scoring/capture.ts` writes through outbox commit-before-network (FR-018 step 1)
 - [ ] T052 [US6] Drain engine `lib/offline/drain.ts`: oldest-first idempotent replay with exponential backoff, reconnect handshake fetching match max `seq` and gap-pull (research D3/D4)
-- [ ] T053 [US6] Status UX in `app/(club)/partidos/[matchId]/vivo/page.tsx`: connectivity badge, pending counter, quarantined-item card with fix/discard actions (never silent drop)
+- [ ] T053 [US6] Status UX in `app/(club)/matches/[matchId]/live/page.tsx`: connectivity badge, pending counter, quarantined-item card with fix/discard actions (never silent drop)
 - [ ] T054 [US6] Integration tests `tests/integration/offline-flow.spec.ts`: simulate offline window, app reload before reconnect, resumed drain integrity
 
 **Checkpoint**: Courtside reliability proven; scoring survives outages
@@ -233,7 +248,7 @@ No repetir tareas marcadas `[X]`.
 
 - [ ] T056 [US7] Metric functions `lib/metrics/team.ts` implementing canonical formulas + null-denominator "—" convention (passes T055)
 - [ ] T057 [US7] Indexed aggregate queries `lib/db/dashboard-queries.ts` (org+season slices feeding pure functions; research D5)
-- [ ] T058 [US7] Team dashboard `app/(club)/tableros/equipo/page.tsx`: history table, KPI cards, Recharts trend lines, temporada/competencia filters
+- [ ] T058 [US7] Team dashboard `app/(club)/dashboards/team/page.tsx`: history table, KPI cards, Recharts trend lines, temporada/competencia filters
 - [ ] T059 [US7] Live auto-refresh: TanStack Query invalidation wired to realtime hook for in-progress matches (FR-026)
 - [ ] T060 [US7] E2E `tests/e2e/team-dashboard.spec.ts`: seeded season renders golden values verbatim (SC-007/SC-008 automation)
 
@@ -254,8 +269,8 @@ No repetir tareas marcadas `[X]`.
 ### Implementation for User Story 8
 
 - [ ] T062 [US8] Player metrics `lib/metrics/player.ts` reusing shared count derivations from `lib/metrics/team.ts` (single formula source, FR-025)
-- [ ] T063 [US8] Player profile `app/(club)/tableros/jugadoras/[playerId]/page.tsx` with date/season range filter (FR-024)
-- [ ] T064 [US8] Comparison view `app/(club)/tableros/comparar/page.tsx`: multi-select players, side-by-side metric table + radar/bar charts
+- [ ] T063 [US8] Player profile `app/(club)/dashboards/players/[playerId]/page.tsx` with date/season range filter (FR-024)
+- [ ] T064 [US8] Comparison view `app/(club)/dashboards/compare/page.tsx`: multi-select players, side-by-side metric table + radar/bar charts
 - [ ] T065 [US8] Temporal trend chart component `components/tableros/tendencia.tsx` reused by team and player views
 - [ ] T066 [US8] E2E `tests/e2e/player-dashboard.spec.ts`: profile + comparison render expected golden numbers
 
