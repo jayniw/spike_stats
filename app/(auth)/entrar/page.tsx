@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
-import { createBrowserClient } from "@/lib/db/client";
+import { createBrowserClient } from "@/lib/db/client-browser";
 
 type ModoAcceso = "password" | "magic";
 

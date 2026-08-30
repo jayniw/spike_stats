@@ -50,28 +50,31 @@ Single unified Next.js app (plan.md Structure Decision): `app/`, `components/`,
 
 - [X] T006 Initialize Supabase project (`supabase/config.toml`) and write migration `supabase/migrations/0001_organizations_memberships.sql`: tables `organizations`, `memberships`, `invites` with enums (`membership_role`, `membership_status`), RLS ENABLED + policies per `contracts/rls-access-matrix.md` rows for those resources
 - [X] T007 [P] Implement typed Supabase clients `lib/db/client.ts` (browser + server via `@supabase/ssr`)
-- [ ] T008 [P] Build RLS contract-test harness `tests/contract/rls-harness.ts` (fixture users in each role across TWO clubs, real JWTs against local Supabase) + suite `tests/contract/rls-core.spec.ts` proving matrix cells and explicit cross-org denial for 0001 tables, including a dual-membership case: same user active in two clubs with different roles, isolation verified in both directions (FR-005)
+- [X] T008 [P] Build RLS contract-test harness `tests/contract/rls-harness.ts` (fixture users in each role across TWO clubs, real JWTs against the hosted Supabase project) + suite `tests/contract/rls-core.spec.ts` proving matrix cells and explicit cross-org denial for 0001 tables, including a dual-membership case: same user active in two clubs with different roles, isolation verified in both directions (FR-005)
 - [X] T009 [P] Create Zod schemas `lib/validation/core.ts` (role enum, invite email/token, membership transitions)
 - [X] T010 [P] Write demo seed `scripts/seed-demo.ts`: two clubs, users for all five roles, and a demo season fixture (20 matches incl. 3 result-only entries with set scores plus action distributions reproducing `contracts/metrics.md` golden values); printed passwords (quickstart prerequisites)
 - [X] T011 Implement auth entry `app/(auth)/entrar/page.tsx` (magic-link + password via Supabase Auth) and session guard layout `app/(club)/layout.tsx` redirecting unauthenticated users
 - [X] T012 [P] Establish empty/error/loading state conventions with shadcn wrappers in `components/ui/states.tsx` and toast provider in `app/layout.tsx`
 
-### ⏸ ESTADO DE EJECUCIÓN — actualizado tras sesión con cortes de red
+### ⏸ ESTADO DE EJECUCIÓN — Fase 2 completa (Supabase hosteado)
 
-**Completadas y commiteadas**: Fase 1 (T001–T005) + Fase 2: T006 ✓, T007 ✓,
-T009 ✓, T010 ✓, T011 ✓, T012 ✓. Typecheck/lint verde. **Única tarea
-pendiente de Fase 2: T008**, bloqueada por el entorno.
+**Completadas y commiteadas**: Fase 1 (T001–T005) + **Fase 2 completa**
+(T006–T012, incluida T008: suite RLS 26/26 verde contra el proyecto Supabase
+hosteado — aislamiento cruzado y denegación anónima probados con Postgres
+real). Typecheck/lint verde.
 
-**Bloqueo de entorno**: el stack local de Supabase NO está levantado
-(contenedor `supabase_db_spikestats` inexistente; imágenes Docker a medio
-descargar por cortes). Todo lo ejecutable sin DB ya está hecho y commiteado.
+**Cambio de entorno**: el stack local de Supabase quedó DESCARTADO (requiere
+Docker/virtualización no disponible en esta máquina). El proyecto usa un
+**proyecto Supabase hosteado** (free tier) con claves en `.env.local` (ver
+research.md D8). La migración 0001 ya está aplicada al proyecto hosteado;
+las siguientes se aplican con `npx supabase db push` o SQL Editor.
 
-**Al reanudar (con Docker/virtualización funcionando):**
-1. `npx supabase start` (reintenta: las capas ya descargadas se reutilizan;
-   puede tardar varios minutos la primera vez).
-2. `npx supabase db reset` — valida que la migración 0001 (T006) aplique limpia.
-3. Ejecutar **T008** (harness RLS en `tests/contract/` contra la DB local).
-4. Checkpoint Fase 2 → continuar Fase 3 (US1) según plan de olas paralelas.
+**Nota seed**: `npm run seed:demo` requiere las migraciones 0002–0004
+(T022/T028/T036); el wipe ya tolera tablas inexistentes (PGRST205) para uso
+progresivo. Ejecutarlo completo al llegar al checkpoint de US3/US4.
+
+**Siguiente paso**: Fase 3 — US1 (crear club e invitar miembros), tests FIRST
+(T013/T018 antes que T014–T017/T019).
 No repetir tareas marcadas `[X]`.
 
 **Checkpoint**: Foundation ready — RLS harness green, login works, stories can start in parallel

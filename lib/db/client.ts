@@ -1,18 +1,14 @@
 import {
-  createBrowserClient as ssrCreateBrowserClient,
   createServerClient as ssrCreateServerClient,
 } from "@supabase/ssr";
 import { type SupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import type { NextRequest, NextResponse } from "next/server";
 
-// Clientes tipados de Supabase (browser + server + middleware) siguiendo los
-// patrones oficiales de @supabase/ssr y la decisión D2 de
-// specs/001-spikestats-mvp/research.md.
+import type { Database } from "./types";
 
-export type Database = Record<string, unknown>;
-
-let browserClient: SupabaseClient<Database> | undefined;
+// Clientes Supabase para uso en Server Components, Route Handlers y Middleware.
+// El cliente browser vive en client-browser.ts para no arrastrar "next/headers".
 
 function getSupabaseEnv(): { url: string; anonKey: string } {
   const url = process.env["NEXT_PUBLIC_SUPABASE_URL"];
@@ -21,14 +17,6 @@ function getSupabaseEnv(): { url: string; anonKey: string } {
     throw new Error("Faltan variables de entorno de Supabase");
   }
   return { url, anonKey };
-}
-
-export function createBrowserClient(): SupabaseClient<Database> {
-  if (!browserClient) {
-    const { url, anonKey } = getSupabaseEnv();
-    browserClient = ssrCreateBrowserClient<Database>(url, anonKey);
-  }
-  return browserClient;
 }
 
 export async function createServerClient(): Promise<SupabaseClient<Database>> {

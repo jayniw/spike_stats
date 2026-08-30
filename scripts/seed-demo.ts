@@ -1,6 +1,6 @@
-import { spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
+import { loadEnvFile } from "./lib/load-env";
 
 type Skill = "serve" | "reception" | "set_pass" | "attack" | "block" | "dig";
 type Outcome = "point" | "error" | "rally_continues";
@@ -43,7 +43,6 @@ function makeDb(url: string, serviceKey: string) {
 
 type Db = ReturnType<typeof makeDb>;
 
-const DEFAULT_URL = "http://127.0.0.1:54321";
 const DEMO_PASSWORD = "demo1234!";
 const ZERO_UUID = "00000000-0000-0000-0000-000000000000";
 const RNG_SEED = 20260823;
@@ -190,52 +189,8 @@ function makeShareToken(): string {
   return `${randomUUID().replace(/-/g, "")}${randomUUID().replace(/-/g, "")}`.slice(0, 40);
 }
 
-function deepFindServiceRoleKey(value: unknown): string | undefined {
-  if (Array.isArray(value)) {
-    for (const item of value) {
-      const found = deepFindServiceRoleKey(item);
-      if (found) return found;
-    }
-    return undefined;
-  }
-  if (value !== null && typeof value === "object") {
-    for (const [key, nested] of Object.entries(value as Record<string, unknown>)) {
-      if (/service[\s_-]*role/i.test(key) && typeof nested === "string" && nested.trim().length > 0) {
-        return nested.trim();
-      }
-      const found = deepFindServiceRoleKey(nested);
-      if (found) return found;
-    }
-  }
-  return undefined;
-}
-
 function resolveServiceRoleKey(): string | undefined {
-  const fromEnv = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (fromEnv && fromEnv.trim().length > 0) return fromEnv.trim();
-
-  const result = spawnSync("npx", ["supabase", "status", "-o", "json"], {
-    encoding: "utf8",
-    shell: process.platform === "win32",
-    windowsHide: true,
-    timeout: 60_000,
-  });
-  const stdout = (result.stdout ?? "").trim();
-  if (stdout.startsWith("{")) {
-    try {
-      const found = deepFindServiceRoleKey(JSON.parse(stdout) as unknown);
-      if (found) return found;
-    } catch {
-      console.warn("[AVISO] La salida de `supabase status -o json` no es JSON válido; se intenta búsqueda textual.");
-    }
-  }
-  const raw = `${result.stdout ?? ""}\n${result.stderr ?? ""}`;
-  const match = raw.match(
-    /service[\s_-]*role[^:=\n]*[:=]\s*"?(ey[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)"?/i,
-  );
-  const captured = match?.[1];
-  if (captured) return captured;
-  return undefined;
+  return process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() || undefined;
 }
 
 async function insertRows(db: Db, table: string, rows: Array<Record<string, unknown>>): Promise<void> {
@@ -400,6 +355,9 @@ function assembleSeeds(
 }
 
 async function wipePublicTables(db: Db): Promise<void> {
+  // Limpia en orden inverso de dependencias. Las tablas de migraciones aún no
+  // aplicadas (p.ej. matches/teams hasta T022+) se omiten sin fallar (PGRST205),
+  // para poder usar el seed progresivamente conforme exista cada migración.
   const tables = [
     "match_actions",
     "set_scores",
@@ -412,7 +370,14 @@ async function wipePublicTables(db: Db): Promise<void> {
   ];
   for (const table of tables) {
     const { error } = await db.from(table).delete().neq("id", ZERO_UUID);
-    if (error) throw new Error(`No se pudo limpiar "${table}": ${error.message}`);
+    if (error) {
+      const code = (error as { code?: string }).code;
+      if (code === "PGRST205" || /could not find the table/i.test(error.message)) {
+        console.warn(`[AVISO] "${table}" aún no existe (migración pendiente); se omite.`);
+        continue;
+      }
+      throw new Error(`No se pudo limpiar "${table}": ${error.message}`);
+    }
   }
 }
 
@@ -442,15 +407,19 @@ function printTable(headers: string[], rows: string[][]): void {
 }
 
 async function main(): Promise<void> {
-  const url = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? DEFAULT_URL).trim();
+  loadEnvFile([".env.local", ".env"]);
+  const url = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL ?? "").trim();
   const serviceKey = resolveServiceRoleKey();
-  if (!serviceKey) {
-    console.error("[ERROR] No se pudo resolver la SERVICE_ROLE_KEY.");
-    console.error("Opciones:");
-    console.error("  1) Levanta supabase local y reintenta:  npx supabase start");
-    console.error('  2) Exporta la clave manualmente:  $env:SUPABASE_SERVICE_ROLE_KEY="<clave>"');
-    console.error("     (la copias de `npx supabase status -o json`, campo SERVICE_ROLE_KEY)");
-    console.error("La clave service role es obligatoria: bypasea RLS y permite crear usuarios en auth.");
+  if (!url || !serviceKey) {
+    console.error("[ERROR] Faltan variables de entorno para el seed.");
+    console.error("Configura .env.local (copia de .env.local.example) con los datos del");
+    console.error("proyecto Supabase hosteado — Dashboard → Project Settings → API:");
+    if (!url) {
+      console.error("  - NEXT_PUBLIC_SUPABASE_URL      (ej. https://abcd1234.supabase.co)");
+    }
+    if (!serviceKey) {
+      console.error("  - SUPABASE_SERVICE_ROLE_KEY     (bypasea RLS; solo scripts de servidor)");
+    }
     process.exit(1);
   }
 
@@ -695,7 +664,9 @@ async function main(): Promise<void> {
   console.log(`Instancia Supabase: ${url}`);
 }
 
-await main().catch((error: unknown) => {
+// Sin `await` de nivel superior: tsx trata los .ts como CommonJS y no soporta
+// top-level await. exitCode (no exit) evita el assertion de libuv en Windows.
+void main().catch((error: unknown) => {
   console.error("[ERROR] Seed demo falló:", error instanceof Error ? error.message : error);
-  process.exit(1);
+  process.exitCode = 1;
 });

@@ -13,6 +13,7 @@ export default defineConfig({
   },
   test: {
     passWithNoTests: true,
+    globalSetup: ["tests/global-setup.ts"],
     projects: [
       {
         test: {

@@ -1,28 +1,46 @@
 # Quickstart — SpikeStats MVP validation
 
 **Feature**: `001-spikestats-mvp` | **Date**: 2026-08-23
-End-to-end validation guide. Proves the spec's success criteria on a local
-environment before any PR merge. References: [data-model.md](./data-model.md),
-[contracts/](./contracts/).
+End-to-end validation guide. Proves the spec's success criteria against a
+hosted Supabase project before any PR merge. References:
+[data-model.md](./data-model.md), [contracts/](./contracts/).
 
 ## Prerequisites
 
 - Node.js 20 LTS, npm
-- Docker Desktop (for local Supabase)
-- Supabase CLI ≥ latest stable
+- Un proyecto **Supabase hosteado** (free tier) creado en
+  [supabase.com/dashboard](https://supabase.com/dashboard) — no se requiere
+  Docker ni stack local
+- Las claves del proyecto: Dashboard → Project Settings → API
+
+> Nota free tier: un proyecto inactivo ~1 semana se pausa; se restaura desde
+> el dashboard en un clic. Los datos persisten.
 
 ## Setup
 
 ```powershell
 npm ci
-supabase start                 # local Postgres+Auth+Realtime stack
-supabase db reset              # applies supabase/migrations (schema + RLS)
-npm run seed:demo              # fixture club, users per role, demo season data
-npm run dev                    # http://localhost:3000
+Copy-Item .env.local.example .env.local   # completa URL + anon key + service_role key
+npx supabase db push                      # aplica supabase/migrations (schema + RLS) al proyecto hosteado
+npm run seed:demo                         # fixture club, users per role, demo season data
+npm run dev                               # http://localhost:3000
 ```
+
+Alternativa al CLI para aplicar migraciones: copia el contenido de cada
+archivo de `supabase/migrations/` y ejecútalo en el SQL Editor del dashboard
+(en orden por número de archivo).
+
+Si prefieres el CLI sin login interactivo: `npx supabase link --project-ref
+<ref>` pide el password de BD (Dashboard → Settings → Database) y luego
+`npx supabase db push`.
 
 Fixture accounts (from seed): `admin@demo.club`, `coach@demo.club`,
 `analyst@demo.club`, `player@demo.club` (password printed by seed script).
+
+> Auth email: el SMTP gratuito de Supabase tiene límite bajo (~2 correos/hora).
+> Para desarrollo usa las cuentas con contraseña del seed; configura
+> Authentication → URL Configuration → http://localhost:3000/** si vas a probar
+> magic links.
 
 ## Validation scenarios
 
@@ -31,7 +49,7 @@ Fixture accounts (from seed): `admin@demo.club`, `coach@demo.club`,
 2. Log in as a seeded user of the second fixture club; open that URL.
 3. **Expected**: access denied / zero Demo rows rendered.
 4. Run `npm run test -- contract` → RLS matrix suites all green
-   (cross-org denial cases included).
+   (cross-org denial cases included, contra el proyecto hosteado).
 
 ### V2 — Roster rules (FR-007/FR-008)
 1. As coach: create team "Primera"; add player dorsal 7.
@@ -49,7 +67,7 @@ Fixture accounts (from seed): `admin@demo.club`, `coach@demo.club`,
 5. Run `npm run test:e2e -- scoring.spec.ts`.
 
 ### V4 — Offline resilience (SC-002/SC-003, Principle III)
-1. In live match, set browser offline (DevTools) or stop local Supabase.
+1. In live match, set browser offline (DevTools → Network → Offline).
 2. Record 10 actions → each confirmed locally as `pending`.
 3. Restore connectivity; keep tab open.
 4. **Expected**: queue drains automatically; `npm run db:snapshot` shows

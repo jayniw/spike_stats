@@ -36,8 +36,8 @@ stack is justified in [research.md](./research.md).
 auth; client-side IndexedDB used only as the offline action outbox (Principle III).
 
 **Testing**: Vitest (unit + contract), Playwright (E2E smoke at phone-sized
-viewport), RLS policy contract tests executed against a local Supabase
-instance per role fixture (see [research.md](./research.md) D8).
+viewport), RLS policy contract tests executed against the hosted Supabase
+project per role fixture (see [research.md](./research.md) D8).
 
 **Target Platform**: Mobile-first PWA served by Vercel; primary target is a
 coach's phone browser (one-handed use); desktop is a responsive adaptation.
@@ -64,7 +64,7 @@ matches — comfortably within free-tier budgets (SC-009).
 
 | # | Principle | Status | How this plan satisfies it |
 |---|-----------|--------|----------------------------|
-| I | Multi-Tenant Isolation by RLS (NON-NEGOTIABLE) | PASS | Every table carries `organization_id`; RLS enabled on all tables; role permission matrix defined in `contracts/rls-access-matrix.md`; contract tests prove per-role allow/deny including explicit cross-org denial (local Supabase test harness). Public exposure only via token-scoped read path. |
+| I | Multi-Tenant Isolation by RLS (NON-NEGOTIABLE) | PASS | Every table carries `organization_id`; RLS enabled on all tables; role permission matrix defined in `contracts/rls-access-matrix.md`; contract tests prove per-role allow/deny including explicit cross-org denial (RLS test harness against hosted Supabase). Public exposure only via token-scoped read path. |
 | II | Mobile-First Live Scoring | PASS | Scoring screen designed at 360–430 px width, thumb-zone layout, ≥48 px touch targets, undo affordance; Playwright smoke runs at mobile viewport; PR gate requires phone-viewport smoke pass. |
 | III | Offline Resilience & Realtime Sync | PASS | Append-only `match_actions` log with idempotency key (`client_action_id` UNIQUE); IndexedDB outbox drains on reconnect with zero-loss/zero-duplicate semantics (`contracts/sync.md`); Supabase Realtime pushes to dashboards/public board (<5 s). |
 | IV | Test-First Development (NON-NEGOTIABLE) | PASS | TDD enforced in workflow; metric formulas specified as executable contracts (`contracts/metrics.md`) with golden-value Vitest suites; RLS contract-test suite mandated per migration. |

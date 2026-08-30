@@ -88,8 +88,13 @@ La especificación completa del MVP está en
 ### Requisitos
 
 - Node.js 20 LTS o superior + npm
-- Docker Desktop (para el stack local de Supabase)
-- Supabase CLI (última versión estable)
+- Un proyecto **Supabase hosteado** (free tier) creado en
+  [supabase.com/dashboard](https://supabase.com/dashboard)
+  — no se requiere Docker ni stack local
+
+> Free tier: un proyecto inactivo ~1 semana se pausa (se restaura desde el
+> dashboard con un clic; los datos persisten). El CLI de Supabase solo se usa
+> para aplicar migraciones (`db push`) — no necesita Docker.
 
 ### Configuración
 
@@ -100,21 +105,25 @@ La especificación completa del MVP está en
    ```
 
 2. Variables de entorno: copia `.env.local.example` a `.env.local` y completa
-   los valores.
+   los valores desde Dashboard → Project Settings → API.
 
    ```powershell
    Copy-Item .env.local.example .env.local
    ```
 
-   Con Supabase local: `url` = `http://127.0.0.1:54321` y la anon key que
-   imprime `supabase status`.
+   - `NEXT_PUBLIC_SUPABASE_URL`: `https://<project-ref>.supabase.co`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: clave "anon public" / "publishable"
+   - `SUPABASE_SERVICE_ROLE_KEY`: solo para scripts de servidor (seed/tests);
+     nunca la expongas al navegador ni la subas a git.
 
-3. Levanta el stack local y aplica migraciones:
+3. Aplica las migraciones al proyecto hosteado:
 
    ```powershell
-   supabase start      # Postgres + Auth + Realtime locales
-   supabase db reset   # aplica supabase/migrations (schema + RLS)
+   npx supabase db push    # aplica supabase/migrations (schema + RLS)
    ```
+
+   Alternativa sin CLI: copia cada archivo de `supabase/migrations/` en el
+   SQL Editor del dashboard (en orden).
 
 4. Carga datos demo (club, usuarios por rol y temporada con partidos):
 

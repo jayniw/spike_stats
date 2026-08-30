@@ -90,15 +90,25 @@ within that stack and justifies every dependency added beyond it (Principle V).
 
 ## D8. RLS contract-test harness
 
-- **Decision**: Contract tests run against a local Supabase instance
-  (`supabase start` + migrations reset) using real JWTs minted for fixture
-  users in each role, asserting allow/deny per matrix cell including explicit
-  cross-org denial. Executed via Vitest suites in `tests/contract/`.
-- **Rationale**: Tests the actual enforcement layer (Postgres RLS), not a
-  mock; satisfies constitution I+IV verbatim ("prove cross-org denial").
-- **Alternatives considered**: pgTAP (SQL-only, weaker integration with CI
-  reporting we already use); mocking the DB client (tests nothing real).
-  Rejected.
+- **Decision**: Contract tests run against the **hosted Supabase project**
+  (free tier, same instance used for development) using real JWTs minted for
+  fixture users in each role, asserting allow/deny per matrix cell including
+  explicit cross-org denial. Executed via Vitest suites in `tests/contract/`.
+  Credentials come from `.env.local` (`NEXT_PUBLIC_SUPABASE_URL`,
+  `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` — server-side
+  scripts only). Fixtures self-clean (orgs, memberships and auth users are
+  deleted after each run), so no fixture residue accumulates in the project.
+- **Rationale**: Tests the actual enforcement layer (Postgres RLS behind
+  PostgREST), not a mock; satisfies constitution I+IV verbatim ("prove
+  cross-org denial"). The local Supabase stack was discarded as an option
+  because it requires Docker Desktop/virtualization, unavailable in this dev
+  environment; the hosted project exercises the identical Postgres + Auth +
+  API surface that production will use.
+- **Alternatives considered**: dedicated second free-tier test project
+  (viable upgrade path once a second environment is needed); local stack via
+  Docker (rejected: infrastructure unavailable on this machine); pgTAP
+  (SQL-only, weaker integration with CI reporting we already use); mocking
+  the DB client (tests nothing real). Rejected.
 
 ## D9. PWA installability & offline shell
 
