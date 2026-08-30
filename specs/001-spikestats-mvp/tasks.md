@@ -73,9 +73,37 @@ las siguientes se aplican con `npx supabase db push` o SQL Editor.
 (T022/T028/T036); el wipe ya tolera tablas inexistentes (PGRST205) para uso
 progresivo. Ejecutarlo completo al llegar al checkpoint de US3/US4.
 
-**Siguiente paso**: Fase 3 — US1 (crear club e invitar miembros), tests FIRST
-(T013/T018 antes que T014–T017/T019).
+**Siguiente paso**: Fase 4 — US2 (gestionar equipos y jugadoras), tests FIRST
+(T020/T021 antes que T022–T026).
 No repetir tareas marcadas `[X]`.
+
+### ✅ Fase 3 completa — US1 (Crear club e invitar miembros)
+
+**Completadas**: T013–T019 (tests + implementación de US1).
+- T018: 25 contract tests RLS memberships/invites verdes contra Supabase hosteado
+- T013: E2E onboarding tests escritos (fallan correctamente — TDD red phase)
+- T017: `lib/auth/guards.ts` con `requireRole()` server-side
+- T014: Página de onboarding + server action para crear club
+- T015: Página de gestión de miembros (cambio rol/revoke, admin-only)
+- T016: Página de invitaciones + ruta de aceptación `/accept/[token]`
+- T019: Navegación del shell con links filtrados por rol
+
+### ✅ Fase 3.5 — Multi-club selector & role switching
+
+**Completadas**: T019B–T019E.
+- T019B: Root page redirige según cantidad de clubes
+- T019C: Selector de clubs con cookie `selected_org`
+- T019D: Menú de usuario con cambio de club y logout
+- T019E: Club layout lee cookie y pasa contexto
+
+### ✅ Fase 3.6 — User profiles (name, phone)
+
+**Completadas**: T019F–T019I.
+- T019F: Migración `0002_profiles.sql` (full_name, phone, avatar_url)
+- T019G: Seed crea perfiles con nombre y teléfono
+- T019H/I: Members page muestra nombre/email/telefono en vez de IDs
+
+Typecheck/lint verde. **Siguiente paso**: Fase 4 — US2 (equipos y jugadoras).
 
 **Checkpoint**: Foundation ready — RLS harness green, login works, stories can start in parallel
 
@@ -104,18 +132,52 @@ No repetir tareas marcadas `[X]`.
 
 ### Tests for User Story 1 (write FIRST, must FAIL)
 
-- [ ] T013 [P] [US1] E2E `tests/e2e/onboarding.spec.ts`: create club → invite spectator → assert restricted nav and denied direct URLs (V1 flow)
-- [ ] T018 [P] [US1] Contract tests `tests/contract/rls-memberships.spec.ts`: coach may invite only analyst/player/spectator; analyst cannot manage memberships; all cross-org denials (matrix rows)
+- [X] T013 [P] [US1] E2E `tests/e2e/onboarding.spec.ts`: create club → invite spectator → assert restricted nav and denied direct URLs (V1 flow)
+- [X] T018 [P] [US1] Contract tests `tests/contract/rls-memberships.spec.ts`: coach may invite only analyst/player/spectator; analyst cannot manage memberships; all cross-org denials (matrix rows)
 
 ### Implementation for User Story 1
 
-- [ ] T014 [US1] Club creation onboarding `app/(onboarding)/new-club/page.tsx` + server action inserting `organizations` + admin `membership` atomically
-- [ ] T015 [US1] Members management `app/(club)/settings/members/page.tsx` listing memberships with role change and revoke actions (admin-only, FR-002/FR-003)
-- [ ] T016 [US1] Invitations `app/(club)/settings/invitations/page.tsx` + acceptance route `app/(auth)/accept/[token]/page.tsx` consuming `invites` tokens with expiry (FR-002, research D7)
-- [ ] T017 [US1] Server-side role guards `lib/auth/guards.ts` (`requireRole(...roles)`) used by all `(club)` mutations (FR-003)
-- [ ] T019 [US1] Wire club-shell navigation `app/(club)/layout.tsx` nav with role-filtered links and Spanish labels
+- [X] T014 [US1] Club creation onboarding `app/(onboarding)/new-club/page.tsx` + server action inserting `organizations` + admin `membership` atomically
+- [X] T015 [US1] Members management `app/(club)/settings/members/page.tsx` listing memberships with role change and revoke actions (admin-only, FR-002/FR-003)
+- [X] T016 [US1] Invitations `app/(club)/settings/invitations/page.tsx` + acceptance route `app/(auth)/accept/[token]/page.tsx` consuming `invites` tokens with expiry (FR-002, research D7)
+- [X] T017 [US1] Server-side role guards `lib/auth/guards.ts` (`requireRole(...roles)`) used by all `(club)` mutations (FR-003)
+- [X] T019 [US1] Wire club-shell navigation `app/(club)/layout.tsx` nav with role-filtered links and Spanish labels
 
 **Checkpoint**: US1 fully functional alone: club exists, roles enforced, isolation proven
+
+---
+
+## Phase 3.5: Multi-club selector & role switching
+
+**Purpose**: Allow users with multiple club memberships to choose which club to operate in, and switch between clubs/roles from within the app.
+
+**Why now**: US1 implementation assumes one club per user. Real usage (and testing) requires selecting between multiple clubs and switching context without re-login.
+
+### Implementation
+
+- [X] T019B Root page `app/page.tsx`: authenticated users with one club → redirect to `/teams?org=<id>`; multiple clubs → `/select-club`; no clubs → `/onboarding/new-club`
+- [X] T019C Club selector `app/select-club/page.tsx` + `club-selector.tsx`: shows all clubs with role labels; stores selection in `selected_org` cookie via server action `app/select-club/actions.ts`
+- [X] T019D User menu `components/user-menu.tsx`: dropdown in header showing current club/role, club switcher (if multi-club), and sign-out
+- [X] T019E Club layout `app/(club)/layout.tsx`: reads `selected_org` cookie to determine active org; redirects to `/select-club` if cookie missing/invalid; fetches all memberships for role switcher
+
+**Checkpoint**: User can log in → select club → switch clubs without re-login
+
+---
+
+## Phase 3.6: User profiles (name, phone)
+
+**Purpose**: Store and display user profile data (full_name, phone) beyond auth.users email. Phone enables future WhatsApp automation.
+
+**Why now**: Members page showed raw user IDs — unusable for real people. Profiles are needed for any user-facing display.
+
+### Implementation
+
+- [X] T019F Migration `supabase/migrations/0002_profiles.sql`: `profiles` table (id PK → auth.users, full_name, phone, avatar_url, timestamps) + RLS policies (select any member, update/insert own)
+- [X] T019G Seed script `scripts/seed-phase3.ts`: creates profiles with name + phone for demo users
+- [X] T019H Members page `app/(club)/settings/members/page.tsx`: fetches profiles + emails, displays name/email/phone instead of raw IDs
+- [X] T019I Members table `app/(club)/settings/members/members-table.tsx`: shows member name, email, phone columns
+
+**Checkpoint**: Members page shows real names and phone numbers
 
 ---
 
@@ -357,4 +419,91 @@ tests (constitution IV quality gates apply per PR).
 - TDD: every "Tests … (write FIRST)" task must fail before its implementation tasks start
 - [P] = different files, no unfinished dependencies
 - Commit after each task/logical group; stop at checkpoints to validate stories independently
+
+---
+
+## Cómo probar la Fase 3 (US1: Crear club e invitar miembros)
+
+### Requisitos previos
+
+1. **Proyecto Supabase hosteado** activo (no pausado por inactividad)
+2. **Migración 0001 aplicada** al proyecto hosteado
+3. **Variables de entorno** configuradas en `.env.local`
+
+### Paso 1: Cargar datos demo (mínimo)
+
+```powershell
+pnpm seed:phase3
+```
+
+Esto crea:
+- **Club Demo** con usuarios: `admin@demo.club`, `coach@demo.club`, `analyst@demo.club`, `player@demo.club`, `spectator@demo.club`
+- **Club Atlético Río** con usuario: `admin@rio.club`
+- Contraseña para todos: `demo1234!`
+
+### Paso 2: Arrancar el servidor
+
+```powershell
+pnpm dev
+```
+
+### Paso 3: Probar autenticación
+
+1. Abrir http://localhost:3000
+2. Redirige a `/login`
+3. Ingresa con `admin@demo.club` / `demo1234!`
+4. Redirige a `/teams?org=<id>` (placeholder "Próximamente")
+
+### Paso 4: Probar creación de club nuevo
+
+1. Abre http://localhost:3000/onboarding/new-club
+2. Ingresa nombre del club
+3. Click "Crear club"
+4. Redirige a `/teams`
+
+### Paso 5: Probar gestión de miembros
+
+1. Navega a `/settings/members?org=<id>` (solo admin)
+2. Cambia roles usando el selector
+3. Revoca membresías con el botón
+
+### Paso 6: Probar invitaciones
+
+1. Navega a `/settings/invitations?org=<id>` (admin/coach)
+2. Ingresa un correo y selecciona un rol
+3. Copia el enlace de invitación
+4. Abre el enlace en otra sesión (o modo incógnito)
+5. Acepta la invitación
+
+### Paso 7: Probar selector multi-club
+
+Para probar el selector, ejecuta en SQL Editor de Supabase:
+
+```sql
+INSERT INTO memberships (organization_id, user_id, role, status)
+SELECT 
+  (SELECT id FROM organizations WHERE name = 'Club Atlético Río'),
+  (SELECT id FROM auth.users WHERE email = 'admin@demo.club'),
+  'coach',
+  'active'
+WHERE NOT EXISTS (
+  SELECT 1 FROM memberships 
+  WHERE user_id = (SELECT id FROM auth.users WHERE email = 'admin@demo.club')
+  AND organization_id = (SELECT id FROM organizations WHERE name = 'Club Atlético Río')
+);
+```
+
+Ahora al ingresar con `admin@demo.club`, verás el selector de clubs.
+
+### Paso 8: Probar cambio de club
+
+1. Haz clic en el menú de usuario (esquina superior derecha)
+2. Selecciona otro club
+3. La app cambia al contexto del nuevo club
+
+### Quality gates
+
+```powershell
+pnpm typecheck && pnpm lint && pnpm test:contract
+```
 - Any new dependency requires justification note in PR (constitution V)

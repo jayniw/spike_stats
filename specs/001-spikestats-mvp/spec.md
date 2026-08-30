@@ -303,6 +303,16 @@ manual sobre sus acciones.
 - **FR-005**: Users MUST poder pertenecer a más de un club con roles
   independientes en cada uno.
 
+**Perfiles de usuario**
+
+- **FR-005A**: System MUST mantener un perfil por usuario con: nombre
+  completo (`full_name`), teléfono (`phone`, opcional, para WhatsApp),
+  avatar (`avatar_url`, opcional).
+- **FR-005B**: Usuarios autenticados pueden ver perfiles de otros (para
+  listas de miembros). Solo el propio usuario puede editar su perfil.
+- **FR-005C**: System MUST mostrar nombre y teléfono en páginas de miembros
+  en lugar de IDs crudos.
+
 **Equipos y jugadoras**
 
 - **FR-006**: Coaches MUST poder crear, editar y archivar equipos dentro de su
@@ -390,6 +400,9 @@ manual sobre sus acciones.
 
 - **Club (Organización)**: institución con espacio de datos propio y aislado;
   contiene equipos, partidos y membresías.
+- **Perfil de usuario**: información pública del usuario más allá de
+  auth.users: nombre completo, teléfono (para WhatsApp), avatar. Un perfil
+  por usuario, compartido entre clubes.
 - **Membresía**: relación usuario–club con un único rol
   (administrador/entrenador/analista/jugadora/espectador).
 - **Equipo**: grupo dentro de un club, con nombre y categoría.

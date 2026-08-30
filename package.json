@@ -17,6 +17,7 @@
     "test:integration": "vitest run --project integration",
     "test:e2e": "playwright test",
     "seed:demo": "tsx scripts/seed-demo.ts",
+    "seed:phase3": "tsx scripts/seed-phase3.ts",
     "seed:volume": "tsx scripts/seed-volume.ts",
     "db:snapshot": "tsx scripts/db-snapshot.ts"
   },
