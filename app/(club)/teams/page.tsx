@@ -1,6 +1,8 @@
 import * as React from "react";
 
 import { requireRole } from "@/lib/auth/guards";
+import { listTeamsWithRoster } from "@/lib/db/teams";
+import { TeamsList } from "./teams-list";
 
 export default async function TeamsPage({
   searchParams,
@@ -22,24 +24,26 @@ export default async function TeamsPage({
   }
 
   const ctx = await requireRole(orgId);
+  const canManage = ctx.role === "club_admin" || ctx.role === "coach";
+
+  const teams = await listTeamsWithRoster(orgId);
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Equipos</h1>
-        <p className="text-muted-foreground">
-          Gestiona los equipos de tu club.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Equipos</h1>
+          <p className="text-muted-foreground">
+            Gestiona los equipos de tu club.
+          </p>
+        </div>
       </div>
 
-      <div className="rounded-lg border border-dashed p-8 text-center">
-        <p className="text-muted-foreground">
-          Próximamente: crear equipos y gestionar jugadoras.
-        </p>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Tu rol actual: <span className="font-medium">{ctx.role}</span>
-        </p>
-      </div>
+      <TeamsList
+        teams={teams}
+        orgId={orgId}
+        canManage={canManage}
+      />
     </div>
   );
 }

@@ -73,8 +73,8 @@ las siguientes se aplican con `npx supabase db push` o SQL Editor.
 (T022/T028/T036); el wipe ya tolera tablas inexistentes (PGRST205) para uso
 progresivo. Ejecutarlo completo al llegar al checkpoint de US3/US4.
 
-**Siguiente paso**: Fase 4 — US2 (gestionar equipos y jugadoras), tests FIRST
-(T020/T021 antes que T022–T026).
+**Siguiente paso**: Fase 5 — US3 (registrar partidos y resultados), tests FIRST
+(T027 antes que T028–T033).
 No repetir tareas marcadas `[X]`.
 
 ### ✅ Fase 3 completa — US1 (Crear club e invitar miembros)
@@ -103,9 +103,20 @@ No repetir tareas marcadas `[X]`.
 - T019G: Seed crea perfiles con nombre y teléfono
 - T019H/I: Members page muestra nombre/email/telefono en vez de IDs
 
-Typecheck/lint verde. **Siguiente paso**: Fase 4 — US2 (equipos y jugadoras).
+Typecheck/lint verde. **Siguiente paso**: Fase 5 — US3 (registrar partidos y resultados).
 
-**Checkpoint**: Foundation ready — RLS harness green, login works, stories can start in parallel
+### ✅ Fase 4 — US2 (Gestionar equipos y jugadoras)
+
+**Completadas**: T020–T026 (tests + implementación de US2).
+- T020: 41 contract tests RLS teams/players verdes contra Supabase hosteado
+- T021: 37 unit tests validación Zod (dorsal, posición, nombre, teams)
+- T022: Migración `0003_teams_players.sql` (teams, players, RLS, partial unique index)
+- T023: `lib/db/teams.ts` queries CRUD (list/create/archive team, roster CRUD, duplicate-dorsal error)
+- T024: UI páginas teams (lista con crear, roster editor con editar/agregar/archivar)
+- T025: Flujos archivado/reactivación de jugadoras (FR-009 preserva historial)
+- T026: Componente reutilizable `components/roster/player-selector.tsx` (nombre en inglés, neutro de género)
+
+**Checkpoint**: US1 + US2 work independently
 
 ---
 
@@ -189,16 +200,16 @@ Typecheck/lint verde. **Siguiente paso**: Fase 4 — US2 (equipos y jugadoras).
 
 ### Tests for User Story 2 (write FIRST, must FAIL)
 
-- [ ] T020 [P] [US2] Contract tests `tests/contract/teams-players.spec.ts`: duplicate dorsal within active team denied (and allowed across teams/archived), coach insert allowed, analyst/player denied, cross-org invisible
-- [ ] T021 [P] [US2] Unit tests `lib/validation/players.test.ts`: dorsal 1–99 bounds, position enum, required name (FR-007)
+- [x] T020 [P] [US2] Contract tests `tests/contract/teams-players.spec.ts`: duplicate dorsal within active team denied (and allowed across teams/archived), coach insert allowed, analyst/player denied, cross-org invisible
+- [x] T021 [P] [US2] Unit tests `lib/validation/players.test.ts`: dorsal 1–99 bounds, position enum, required name (FR-007)
 
 ### Implementation for User Story 2
 
-- [ ] T022 [US2] Migration `supabase/migrations/0002_teams_players.sql`: `teams`, `players` (partial UNIQUE(team_id,number) WHERE archived_at IS NULL), RLS policies per matrix
-- [ ] T023 [US2] Queries `lib/db/teams.ts`: list/create/archive team, roster CRUD, duplicate-dorsal error mapping
-- [ ] T024 [US2] Pages `app/(club)/teams/page.tsx` (list/create) and `app/(club)/teams/[teamId]/page.tsx` (roster editor with position/dorsal forms using `lib/validation/players.ts`)
-- [ ] T025 [US2] Archive/deactivate player flows preserving historic action attribution display notes (FR-009) in roster UI + queries
-- [ ] T026 [P] [US2] Reusable roster picker `components/rostero/selector-jugadora.tsx` exported for later scoring screens (US4 dependency-free usage)
+- [x] T022 [US2] Migration `supabase/migrations/0003_teams_players.sql`: `teams`, `players` (partial UNIQUE(team_id,number) WHERE active = true via index), RLS policies per matrix
+- [x] T023 [US2] Queries `lib/db/teams.ts`: list/create/archive team, roster CRUD, duplicate-dorsal error mapping
+- [x] T024 [US2] Pages `app/(club)/teams/page.tsx` (list/create) and `app/(club)/teams/[teamId]/page.tsx` (roster editor with position/dorsal forms using `lib/validation/players.ts`)
+- [x] T025 [US2] Archive/deactivate player flows preserving historic action attribution display notes (FR-009) in roster UI + queries
+- [x] T026 [P] [US2] Reusable roster picker `components/roster/player-selector.tsx` exported for later scoring screens (US4 dependency-free usage)
 
 **Checkpoint**: US1 + US2 work independently
 
