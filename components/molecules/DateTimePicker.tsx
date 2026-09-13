@@ -37,9 +37,18 @@ export function DateTimePicker({
   disabled,
 }: DateTimePickerProps) {
   const [open, setOpen] = useState(false);
+  
+  const getValidDate = (val: Date | undefined): Date | null => {
+    if (!val) return null;
+    const d = val instanceof Date ? val : new Date(val);
+    return isNaN(d.getTime()) ? null : d;
+  };
+  
+  const validValue = getValidDate(value);
+  
   const [time, setTime] = useState({
-    hours: value ? format(value, "HH") : "18",
-    minutes: value ? format(value, "mm") : "00",
+    hours: validValue ? format(validValue, "HH") : "18",
+    minutes: validValue ? format(validValue, "mm") : "00",
   });
 
   const handleDateSelect = (date: Date | undefined) => {
@@ -76,15 +85,15 @@ export function DateTimePicker({
           disabled={disabled}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {value
-            ? format(value, "PPP 'a las' HH:mm", { locale: es })
+          {validValue
+            ? format(validValue, "PPP 'a las' HH:mm", { locale: es })
             : placeholder}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar
           mode="single"
-          selected={value}
+          selected={validValue || undefined}
           onSelect={handleDateSelect}
         />
         <div className="border-t p-3 flex items-center gap-2">
