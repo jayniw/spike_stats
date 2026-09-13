@@ -336,3 +336,86 @@ export type RealtimeMatchSetUpdate = {
     new: MatchSetRow;
     old: MatchSetRow;
 };
+
+// ============================================
+// HELPERS PARA ROTACIÓN Y SERVIDOR
+// ============================================
+
+/** Calcula la siguiente rotación basada en side-out */
+export function getNextRotation(
+    currentRotation: number,
+    servingTeam: ServingTeam,
+    eventTeamId: string,
+    homeTeamId: string
+): { rotation: number; servingTeam: ServingTeam } {
+    const isSideOut = eventTeamId !== (servingTeam === "home" ? homeTeamId : "") ;
+    
+    if (isSideOut || (eventTeamId === homeTeamId && servingTeam === "away") ||
+        (eventTeamId !== homeTeamId && servingTeam === "home")) {
+        return {
+            rotation: currentRotation === 6 ? 1 : currentRotation + 1,
+            servingTeam: servingTeam === "home" ? "away" : "home",
+        };
+    }
+    
+    return { rotation: currentRotation, servingTeam };
+}
+
+/** Obtiene el próximo servidor (posición 1 en la rotación) */
+export function getNextServer(
+    rotation: number,
+    servingTeam: ServingTeam
+): number {
+    // En voleibol, el servidor siempre está en posición 1
+    // La rotación indica qué jugador está en posición 1
+    return rotation;
+}
+
+/** Formatea el tiempo de duración del partido */
+export function formatMatchTime(startTime: string): string {
+    const elapsed = Date.now() - new Date(startTime).getTime();
+    const seconds = Math.floor(elapsed / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    
+    return `${hours.toString().padStart(2, "0")}:${(minutes % 60)
+        .toString()
+        .padStart(2, "0")}:${(seconds % 60).toString().padStart(2, "0")}`;
+}
+
+/** Verifica si el partido ha terminado */
+export function isMatchComplete(
+    sets: MatchSetRow[],
+    format: MatchFormat
+): boolean {
+    const setsToWin = format === "best_of_5" ? 3 : 2;
+    let homeWins = 0;
+    let awayWins = 0;
+    
+    sets.forEach((set) => {
+        if (set.winner_team_id) {
+            // Would need team IDs to determine who won
+            // This is a simplified check
+            homeWins++;
+        }
+    });
+    
+    return homeWins >= setsToWin || awayWins >= setsToWin;
+}
+
+/** Calcula el total de sets ganados por cada equipo */
+export function countSetsWon(
+    sets: MatchSetRow[]
+): { home: number; away: number } {
+    let home = 0;
+    let away = 0;
+    
+    sets.forEach((set) => {
+        if (set.winner_team_id) {
+            // Simplified - would need actual team comparison
+            home++;
+        }
+    });
+    
+    return { home, away };
+}

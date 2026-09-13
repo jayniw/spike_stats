@@ -131,3 +131,44 @@
     @apply font-sans;
   }
 }
+
+/* Volleyball fundamental colors */
+:root {
+  --color-serve: #3b82f6;
+  --color-serve-hover: #2563eb;
+  --color-reception: #22c55e;
+  --color-reception-hover: #16a34a;
+  --color-attack: #ef4444;
+  --color-attack-hover: #dc2626;
+  --color-block: #a855f7;
+  --color-block-hover: #9333ea;
+  --color-set: #f97316;
+  --color-set-hover: #ea580c;
+  --color-defense: #14b8a6;
+  --color-defense-hover: #0d9488;
+}
+
+.dark {
+  --color-serve: #60a5fa;
+  --color-serve-hover: #3b82f6;
+  --color-reception: #4ade80;
+  --color-reception-hover: #22c55e;
+  --color-attack: #f87171;
+  --color-attack-hover: #ef4444;
+  --color-block: #c084fc;
+  --color-block-hover: #a855f7;
+  --color-set: #fb923c;
+  --color-set-hover: #f97316;
+  --color-defense: #2dd4bf;
+  --color-defense-hover: #14b8a6;
+}
+
+/* Safe area insets for mobile */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+}
