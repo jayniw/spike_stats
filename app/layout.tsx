@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Outfit } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Providers } from "./providers";
+import { Header } from "@/components/Header";
 
 const outfit = Outfit({subsets:['latin'],variable:'--font-sans'});
 
@@ -37,7 +38,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", outfit.variable)}
     >
       <body className="min-h-full flex flex-col">
-        <Providers>{children}</Providers>
+        <Providers>
+          <Header />
+          <main className="flex-1 container mx-auto px-4 py-6">{children}</main>
+        </Providers>
       </body>
     </html>
   );

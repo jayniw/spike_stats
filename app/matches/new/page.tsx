@@ -41,7 +41,7 @@ export default function NewMatchPage() {
   const [matchDate, setMatchDate] = useState<Date | undefined>(new Date());
   const [venue, setVenue] = useState("");
   const [tournament, setTournament] = useState("U15 ORO 2026");
-  const [format, setFormat] = useState<"best_of_3" | "best_of_5">("best_of_5");
+  const [format, setFormat] = useState<"best_of_3" | "best_of_5">("best_of_3");
   const [error, setError] = useState<string | null>(null);
 
   const { data: org } = useOrganization();
