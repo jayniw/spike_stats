@@ -8,7 +8,8 @@ type Match = {
   id: string;
   organization_id: string;
   home_team_id: string;
-  away_team_id: string;
+  away_team_id: string | null;
+  opponent_name: string | null;
   match_date: string;
   venue: string | null;
   tournament: string | null;
@@ -34,6 +35,12 @@ export default function MatchesPage() {
     );
   }
 
+  const getOpponentName = (match: Match) => {
+    if (match.opponent_name) return match.opponent_name;
+    if (match.away_team) return match.away_team.name;
+    return "Rival";
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -55,13 +62,13 @@ export default function MatchesPage() {
           {matches.map((match: Match) => (
             <Link
               key={match.id}
-              href={`/match/${match.id}`}
+              href={`/matches/${match.id}`}
               className="block border rounded-lg p-4 hover:bg-accent transition-colors"
             >
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <div className="font-medium">
-                    {match.home_team?.name} vs {match.away_team?.name}
+                    {match.home_team?.name} vs {getOpponentName(match)}
                   </div>
                   <div className="text-sm text-muted-foreground">
                     {new Date(match.match_date).toLocaleDateString("es-ES", {

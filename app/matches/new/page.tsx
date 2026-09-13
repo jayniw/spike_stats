@@ -19,16 +19,28 @@ import { TeamSelect } from "@/components/molecules/TeamSelect";
 import { matchKeys } from "@/hooks/useMatches";
 import { useOrganization, useUserTeams } from "@/hooks/useOrganization";
 
+// Lista de equipos rivales conocidos (U15 ORO)
+const KNOWN_OPPONENTS = [
+  "Albert Einstein Jr",
+  "Albert Einstein",
+  "Nimbles",
+  "Nimbles B",
+  "Vipers",
+  "San Martin",
+  "Rojo y Negro",
+];
+
 export default function NewMatchPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const supabase = createClient();
 
   const [homeTeamId, setHomeTeamId] = useState("");
-  const [awayTeamId, setAwayTeamId] = useState("");
+  const [opponentName, setOpponentName] = useState("");
+  const [customOpponent, setCustomOpponent] = useState("");
   const [matchDate, setMatchDate] = useState<Date | undefined>(new Date());
   const [venue, setVenue] = useState("");
-  const [tournament, setTournament] = useState("");
+  const [tournament, setTournament] = useState("U15 ORO 2026");
   const [format, setFormat] = useState<"best_of_3" | "best_of_5">("best_of_5");
   const [error, setError] = useState<string | null>(null);
 
@@ -37,8 +49,13 @@ export default function NewMatchPage() {
 
   const createMatch = useMutation({
     mutationFn: async () => {
-      if (homeTeamId === awayTeamId) {
-        throw new Error("Los equipos deben ser diferentes");
+      if (!homeTeamId) {
+        throw new Error("Selecciona tu equipo");
+      }
+
+      const finalOpponent = opponentName === "custom" ? customOpponent : opponentName;
+      if (!finalOpponent) {
+        throw new Error("Selecciona o escribe el nombre del rival");
       }
 
       if (!org) {
@@ -50,7 +67,7 @@ export default function NewMatchPage() {
         .insert({
           organization_id: org.id,
           home_team_id: homeTeamId,
-          away_team_id: awayTeamId,
+          opponent_name: finalOpponent,
           match_date: matchDate?.toISOString() || new Date().toISOString(),
           venue: venue || null,
           tournament: tournament || null,
@@ -89,23 +106,37 @@ export default function NewMatchPage() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label>Equipo Local</Label>
+          <Label>Nuestro Equipo</Label>
           <TeamSelect
             teams={teams || []}
             value={homeTeamId}
             onValueChange={setHomeTeamId}
-            placeholder="Seleccionar equipo local"
+            placeholder="Seleccionar nuestro equipo"
           />
         </div>
 
         <div className="space-y-2">
-          <Label>Equipo Visitante</Label>
-          <TeamSelect
-            teams={teams || []}
-            value={awayTeamId}
-            onValueChange={setAwayTeamId}
-            placeholder="Seleccionar equipo visitante"
-          />
+          <Label>Rival</Label>
+          <Select value={opponentName} onValueChange={setOpponentName}>
+            <SelectTrigger>
+              <SelectValue placeholder="Seleccionar rival" />
+            </SelectTrigger>
+            <SelectContent>
+              {KNOWN_OPPONENTS.map((opp) => (
+                <SelectItem key={opp} value={opp}>
+                  {opp}
+                </SelectItem>
+              ))}
+              <SelectItem value="custom">Otro equipo...</SelectItem>
+            </SelectContent>
+          </Select>
+          {opponentName === "custom" && (
+            <Input
+              placeholder="Nombre del rival"
+              value={customOpponent}
+              onChange={(e) => setCustomOpponent(e.target.value)}
+            />
+          )}
         </div>
 
         <div className="space-y-2">
@@ -126,9 +157,9 @@ export default function NewMatchPage() {
         </div>
 
         <div className="space-y-2">
-          <Label>Torneo (opcional)</Label>
+          <Label>Torneo</Label>
           <Input
-            placeholder="Ej: Liga Local 2026"
+            placeholder="Ej: U15 ORO 2026"
             value={tournament}
             onChange={(e) => setTournament(e.target.value)}
           />
