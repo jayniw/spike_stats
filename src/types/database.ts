@@ -182,7 +182,8 @@ export type Tables = {
             id: string;
             organization_id: string;
             home_team_id: string;
-            away_team_id: string;
+            away_team_id: string | null;
+            opponent_name: string | null;
             match_date: string;
             venue: string | null;
             tournament: string | null;
@@ -199,7 +200,8 @@ export type Tables = {
             id?: string;
             organization_id: string;
             home_team_id: string;
-            away_team_id: string;
+            away_team_id?: string | null;
+            opponent_name?: string | null;
             match_date: string;
             venue?: string | null;
             tournament?: string | null;
@@ -216,7 +218,8 @@ export type Tables = {
             id?: string;
             organization_id?: string;
             home_team_id?: string;
-            away_team_id?: string;
+            away_team_id?: string | null;
+            opponent_name?: string | null;
             match_date?: string;
             venue?: string | null;
             tournament?: string | null;
