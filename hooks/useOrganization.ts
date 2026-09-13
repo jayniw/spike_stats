@@ -1,36 +1,46 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "./useAuth";
-import { getUserOrganization, getUserTeams } from "@/app/actions/organization";
+
+// Query keys for cache management
+export const orgKeys = {
+  all: ["organization"] as const,
+  detail: (userId: string) => [...orgKeys.all, userId] as const,
+};
+
+export const teamKeys = {
+  all: ["teams"] as const,
+  list: (orgId: string) => [...teamKeys.all, orgId] as const,
+};
+
+export const playerKeys = {
+  all: ["players"] as const,
+  list: (orgId: string) => [...playerKeys.all, orgId] as const,
+};
+
+export const rosterKeys = {
+  all: ["rosters"] as const,
+  list: (teamId: string) => [...rosterKeys.all, teamId] as const,
+};
+
+// StaleTime: 5 minutes - data is considered fresh for 5 minutes
+const STALE_TIME = 5 * 60 * 1000;
+
+// CacheTime: 30 minutes - data stays in cache for 30 minutes
+const CACHE_TIME = 30 * 60 * 1000;
 
 export function useOrganization() {
   const { user } = useAuth();
   const supabase = createClient();
 
   return useQuery({
-    queryKey: ["organization", user?.id],
+    queryKey: orgKeys.detail(user?.id || ""),
     queryFn: async () => {
-      console.log("[useOrganization] Starting query for user:", user?.id);
-      
-      if (!user) {
-        console.log("[useOrganization] No user, returning null");
-        return null;
-      }
+      if (!user) return null;
 
-      // Try server action first (bypasses RLS)
-      console.log("[useOrganization] Using server action...");
-      const result = await getUserOrganization(user.id);
-      
-      console.log("[useOrganization] Server action result:", result);
-      
-      if (result.org) {
-        return result.org;
-      }
-
-      // Fallback to client query (with RLS)
-      console.log("[useOrganization] Server action failed, trying client query...");
+      // Get user's organization membership
       const { data: membership, error: membershipError } = await supabase
         .from("organization_members")
         .select("organization_id, role")
@@ -38,24 +48,16 @@ export function useOrganization() {
         .limit(1)
         .maybeSingle();
 
-      console.log("[useOrganization] Client membership result:", { membership, membershipError });
-      
-      if (membershipError || !membership) {
-        console.log("[useOrganization] No membership found");
-        return null;
-      }
+      if (membershipError || !membership) return null;
 
+      // Get organization details
       const { data: org, error: orgError } = await supabase
         .from("organizations")
         .select("*")
         .eq("id", membership.organization_id)
         .maybeSingle();
 
-      console.log("[useOrganization] Client org result:", { org, orgError });
-      
-      if (orgError || !org) {
-        return null;
-      }
+      if (orgError || !org) return null;
 
       return {
         ...org,
@@ -63,49 +65,73 @@ export function useOrganization() {
       };
     },
     enabled: !!user,
+    staleTime: STALE_TIME,
+    gcTime: CACHE_TIME,
   });
 }
 
 export function useUserTeams() {
-  const { data: org, isLoading: orgLoading } = useOrganization();
+  const { data: org } = useOrganization();
   const supabase = createClient();
 
   return useQuery({
-    queryKey: ["teams", org?.id],
+    queryKey: teamKeys.list(org?.id || ""),
     queryFn: async () => {
-      console.log("[useUserTeams] Starting query for org:", org?.id);
-      
-      if (!org) {
-        console.log("[useUserTeams] No org, returning empty array");
-        return [];
-      }
+      if (!org) return [];
 
-      // Try server action first (bypasses RLS)
-      console.log("[useUserTeams] Using server action...");
-      const result = await getUserTeams(org.id);
-      
-      console.log("[useUserTeams] Server action result:", result);
-      
-      if (result.teams) {
-        return result.teams;
-      }
-
-      // Fallback to client query (with RLS)
-      console.log("[useUserTeams] Server action failed, trying client query...");
       const { data, error } = await supabase
         .from("teams")
         .select("*")
         .eq("organization_id", org.id)
         .order("name");
 
-      console.log("[useUserTeams] Client result:", { data, error });
-      
-      if (error) {
-        throw error;
-      }
-      
+      if (error) throw error;
       return data;
     },
-    enabled: !!org && !orgLoading,
+    enabled: !!org,
+    staleTime: STALE_TIME,
+    gcTime: CACHE_TIME,
   });
+}
+
+export function useTeamPlayers(teamId: string | null) {
+  const { data: org } = useOrganization();
+  const supabase = createClient();
+
+  return useQuery({
+    queryKey: rosterKeys.list(teamId || ""),
+    queryFn: async () => {
+      if (!org || !teamId) return [];
+
+      const { data, error } = await supabase
+        .from("team_rosters")
+        .select("*, player:players(*)")
+        .eq("team_id", teamId)
+        .order("jersey_number");
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!org && !!teamId,
+    staleTime: STALE_TIME,
+    gcTime: CACHE_TIME,
+  });
+}
+
+// Hook to invalidate org cache (call after mutations)
+export function useInvalidateOrg() {
+  const queryClient = useQueryClient();
+
+  return {
+    invalidateOrg: () => queryClient.invalidateQueries({ queryKey: orgKeys.all }),
+    invalidateTeams: () => queryClient.invalidateQueries({ queryKey: teamKeys.all }),
+    invalidatePlayers: () => queryClient.invalidateQueries({ queryKey: playerKeys.all }),
+    invalidateRosters: () => queryClient.invalidateQueries({ queryKey: rosterKeys.all }),
+    invalidateAll: () => {
+      queryClient.invalidateQueries({ queryKey: orgKeys.all });
+      queryClient.invalidateQueries({ queryKey: teamKeys.all });
+      queryClient.invalidateQueries({ queryKey: playerKeys.all });
+      queryClient.invalidateQueries({ queryKey: rosterKeys.all });
+    },
+  };
 }

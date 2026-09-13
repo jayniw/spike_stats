@@ -31,8 +31,6 @@ const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !serviceRoleKey) {
   console.error("❌ Missing environment variables!");
-  console.error("NEXT_PUBLIC_SUPABASE_URL:", supabaseUrl ? "✓" : "✗");
-  console.error("SUPABASE_SERVICE_ROLE_KEY:", serviceRoleKey ? "✓" : "✗");
   process.exit(1);
 }
 
@@ -46,7 +44,7 @@ async function verifyClub() {
   const { data: org, error: orgError } = await supabase
     .from("organizations")
     .select("*")
-    .eq("slug", "club-ejemplo")
+    .eq("slug", "olympic")
     .single();
 
   if (orgError || !org) {
@@ -72,21 +70,24 @@ async function verifyClub() {
   });
   console.log();
 
-  // Step 3: Check players
+  // Step 3: Check players (via team_rosters)
   console.log("3️⃣ Checking players...");
-  const { data: players, error: playersError } = await supabase
-    .from("players")
-    .select("*")
-    .eq("organization_id", org.id);
+  const { data: rosters, error: rostersError } = await supabase
+    .from("team_rosters")
+    .select("*, player:players(*), team:teams(*)")
+    .in("team_id", teams.map((t) => t.id));
 
-  if (playersError) {
-    console.error("❌ Error fetching players:", playersError);
+  if (rostersError) {
+    console.error("❌ Error fetching rosters:", rostersError);
     return;
   }
-  console.log("✅ Players found:", players.length);
+  console.log("✅ Players found:", rosters.length);
   teams.forEach((team) => {
-    const teamPlayers = players.filter((p) => p.team_id === team.id);
+    const teamPlayers = rosters.filter((r) => r.team_id === team.id);
     console.log("   -", team.name + ":", teamPlayers.length, "players");
+    teamPlayers.forEach((r) => {
+      console.log("     #" + r.jersey_number, r.player.first_name, r.player.last_name, "(", r.position, ")");
+    });
   });
   console.log();
 
@@ -123,7 +124,7 @@ async function verifyClub() {
   console.log("📋 Summary:");
   console.log("   Organization:", org.name);
   console.log("   Teams:", teams.length);
-  console.log("   Players:", players.length);
+  console.log("   Players:", rosters.length);
   console.log("   Admin Email:", user.user.email);
   console.log("\n✅ Everything looks good!");
 }

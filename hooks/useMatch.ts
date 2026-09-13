@@ -4,6 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { matchKeys } from "./useMatches";
 
+// StaleTime for match data
+const MATCH_DETAIL_STALE_TIME = 10 * 1000; // 10 seconds
+const MATCH_EVENTS_STALE_TIME = 5 * 1000; // 5 seconds (real-time feel)
+
 export function useMatch(matchId: string) {
   const supabase = createClient();
 
@@ -20,6 +24,7 @@ export function useMatch(matchId: string) {
       return data;
     },
     enabled: !!matchId,
+    staleTime: MATCH_DETAIL_STALE_TIME,
   });
 }
 
@@ -39,6 +44,7 @@ export function useMatchSets(matchId: string) {
       return data;
     },
     enabled: !!matchId,
+    staleTime: MATCH_DETAIL_STALE_TIME,
   });
 }
 
@@ -59,6 +65,7 @@ export function useMatchEvents(matchId: string, setNumber: number) {
       return data;
     },
     enabled: !!matchId && setNumber > 0,
-    refetchInterval: 30000,
+    refetchInterval: 30000, // Refetch every 30 seconds for live updates
+    staleTime: MATCH_EVENTS_STALE_TIME,
   });
 }
