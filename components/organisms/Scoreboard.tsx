@@ -97,7 +97,7 @@ export function Scoreboard({
     <div className="flex items-center justify-between px-4 py-2">
       {/* Home team */}
       <div className="flex flex-col items-start gap-1">
-        <span className="text-xs text-muted-foreground truncate max-w-[80px]">
+        <span className="text-xs text-muted-foreground">
           {homeTeamName}
         </span>
         <div className="flex gap-1">
@@ -113,10 +113,10 @@ export function Scoreboard({
       </div>
 
       {/* Away team */}
-      <div className="flex flex-col items-end gap-1">
-        <span className="text-xs text-muted-foreground truncate max-w-[80px]">
-          {awayTeamName}
-        </span>
+      <div className="flex flex-col items-start gap-1">
+          <span className="text-xs text-muted-foreground">
+            {awayTeamName}
+          </span>
         <div className="flex gap-1">
           {sets.map((set) => (
             <ScoreBox
