@@ -182,7 +182,11 @@ export function useStartMatch(matchId: string) {
 
       const { error: matchError } = await supabase
         .from("matches")
-        .update({ status: "in_progress", current_set: 1 })
+        .update({ 
+          status: "in_progress", 
+          current_set: 1,
+          started_at: new Date().toISOString()
+        })
         .eq("id", matchId);
 
       if (matchError) throw matchError;

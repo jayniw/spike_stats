@@ -193,6 +193,7 @@ export type Tables = {
             min_point_diff: number;
             status: Enums['match_status'];
             current_set: number;
+            started_at: string | null;
             created_at: string;
             updated_at: string;
         };
@@ -211,6 +212,7 @@ export type Tables = {
             min_point_diff?: number;
             status?: Enums['match_status'];
             current_set?: number;
+            started_at?: string | null;
             created_at?: string;
             updated_at?: string;
         };
