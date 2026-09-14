@@ -48,10 +48,10 @@ export function MatchHeader({
   };
 
   return (
-    <div className="border-b bg-background sticky top-14 z-30">
+    <div className="border-b bg-background sticky top-14 z-40">
       <div className="container mx-auto px-4 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between gap-2 min-w-0">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
             <h1 className="font-bold text-lg truncate">
               {homeTeamName} vs {awayTeamName}
             </h1>

@@ -16,7 +16,7 @@ export function Header() {
   };
 
   return (
-    <header className="border-b bg-background">
+    <header className="sticky top-0 z-50 border-b bg-background">
       <div className="container mx-auto px-4 h-14 flex items-center justify-between">
         <Link href="/matches" className="font-bold text-lg">
           🏐 Spike Stats
