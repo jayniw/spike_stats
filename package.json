@@ -8,7 +8,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "types:generate": "pnpm supabase gen types typescript --project-ref zssttxbjnmoqwoermlld > src/types/database.ts && prettier --write src/types/database.ts"
+    "types:generate": "pnpm supabase gen types typescript --project-ref zssttxbjnmoqwoermlld > src/types/database.ts && prettier --write src/types/database.ts",
+    "setup:club": "npx tsx scripts/setup-club.ts",
+    "verify:club": "npx tsx scripts/verify-club.ts",
+    "setup:jwt": "npx tsx scripts/apply-jwt-migration.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.6",

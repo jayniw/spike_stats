@@ -28,14 +28,16 @@ export function MatchHeader({
   const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {
-    if (match.status !== "in_progress") return;
+    if (match.status !== "in_progress" || !match.started_at) return;
 
+    const startTime = new Date(match.started_at).getTime();
+    
     const interval = setInterval(() => {
-      setElapsed(Date.now() - new Date(match.created_at).getTime());
+      setElapsed(Date.now() - startTime);
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [match.status, match.created_at]);
+  }, [match.status, match.started_at]);
 
   const formatTime = (ms: number) => {
     const seconds = Math.floor(ms / 1000);

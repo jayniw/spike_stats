@@ -182,14 +182,14 @@ export default function LiveMatchPage({
 
   return (
     <div className="min-h-screen flex flex-col">
-      <MatchHeader
+      {/* <MatchHeader
         match={match}
         homeTeamName={match.home_team?.name || "Local"}
         awayTeamName={match.opponent_name || match.away_team?.name || "Visitante"}
         currentRotation={currentRotation}
         servingTeam={servingTeam}
         onStart={isScheduled ? handleStart : undefined}
-      />
+      /> */}
 
       <div className="flex-1 flex flex-col">
         <Scoreboard

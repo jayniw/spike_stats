@@ -15,11 +15,13 @@ interface MatchState {
   serverPosition: number;
   undoStack: PlayEventWithQuality[];
   maxUndo: number;
+  selectedPlayerId: string | null;
 
   setMatchId: (id: string) => void;
   setSets: (sets: MatchSetWithScore[]) => void;
   setEvents: (events: PlayEventWithQuality[]) => void;
   setCurrentSet: (set: number) => void;
+  setSelectedPlayerId: (playerId: string | null) => void;
   addEvent: (event: PlayEventWithQuality) => void;
   undo: () => void;
   canUndo: () => boolean;
@@ -38,6 +40,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
   serverPosition: 1,
   undoStack: [],
   maxUndo: 50,
+  selectedPlayerId: null,
 
   setMatchId: (id) => set({ matchId: id }),
 
@@ -46,6 +49,8 @@ export const useMatchStore = create<MatchState>((set, get) => ({
   setEvents: (events) => set({ events }),
 
   setCurrentSet: (setNumber) => set({ currentSet: setNumber }),
+
+  setSelectedPlayerId: (playerId) => set({ selectedPlayerId: playerId }),
 
   addEvent: (event) => {
     const state = get();
@@ -114,6 +119,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       servingTeam: "home",
       serverPosition: 1,
       undoStack: [],
+      selectedPlayerId: null,
     }),
 }));
 
