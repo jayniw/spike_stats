@@ -9,7 +9,6 @@ import { MatchHeader } from "@/components/organisms/MatchHeader";
 import { Scoreboard } from "@/components/organisms/Scoreboard";
 import { EventGrid } from "@/components/organisms/EventGrid";
 import { UndoStack } from "@/components/organisms/UndoStack";
-import { Button } from "@/components/ui/button";
 import type { Fundamental } from "@/src/types/volleyball";
 
 export default function LiveMatchPage({
@@ -102,7 +101,7 @@ export default function LiveMatchPage({
       <MatchHeader
         match={match}
         homeTeamName={match.home_team?.name || "Local"}
-        awayTeamName={match.away_team?.name || "Visitante"}
+        awayTeamName={match.opponent_name || match.away_team?.name || "Visitante"}
         currentRotation={currentRotation}
         servingTeam={servingTeam}
         onStart={isScheduled ? handleStart : undefined}
@@ -121,7 +120,7 @@ export default function LiveMatchPage({
         <Scoreboard
           match={match}
           homeTeamName={match.home_team?.name || "Local"}
-          awayTeamName={match.away_team?.name || "Visitante"}
+          awayTeamName={match.opponent_name || match.away_team?.name || "Visitante"}
           sets={storeSets}
         />
 
@@ -149,16 +148,9 @@ export default function LiveMatchPage({
 
         {isScheduled && !isInProgress && (
           <div className="container mx-auto px-4 py-8 text-center">
-            <p className="text-muted-foreground mb-4">
+            <p className="text-muted-foreground">
               Este partido aún no ha comenzado
             </p>
-            <Button
-              onClick={handleStart}
-              disabled={startMatch.isPending}
-              size="lg"
-            >
-              {startMatch.isPending ? "Iniciando..." : "Iniciar Partido"}
-            </Button>
           </div>
         )}
       </div>
