@@ -16,14 +16,14 @@ const fundamentals: { fundamental: Fundamental; label: string; qualities: string
     qualities: ["ace", "in_play", "error"],
   },
   {
-    fundamental: "reception",
-    label: "Recepción",
-    qualities: ["excellent", "positive", "negative", "error"],
-  },
-  {
     fundamental: "attack",
     label: "Ataque",
     qualities: ["kill", "in_play", "error"],
+  },
+  {
+    fundamental: "reception",
+    label: "Recepción",
+    qualities: ["excellent", "positive", "negative", "error"],
   },
   {
     fundamental: "block",
@@ -58,7 +58,7 @@ const qualityLabels: Record<string, string> = {
 
 export function EventGrid({ onEvent, disabled, loading }: EventGridProps) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 p-2">
+    <div className="grid grid-cols-2 gap-2 p-2">
       {fundamentals.map(({ fundamental, label, qualities }) => (
         <div key={fundamental} className="space-y-1">
           <div className="text-xs font-medium text-muted-foreground text-center">
