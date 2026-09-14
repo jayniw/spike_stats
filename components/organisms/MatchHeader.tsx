@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MatchStatusBadge } from "@/components/molecules/MatchStatusBadge";
 import { RotationDisplay } from "@/components/molecules/RotationDisplay";
 import type { MatchRow, ServingTeam } from "@/src/types/volleyball";
 
@@ -51,15 +50,12 @@ export function MatchHeader({
     <div className="border-b bg-background sticky top-14 z-40">
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-2 min-w-0">
-          <div className="flex items-center gap-2 min-w-0 flex-1">
-            <h1 className="font-bold text-lg truncate">
-              {homeTeamName} vs {awayTeamName}
-            </h1>
-            <MatchStatusBadge status={match.status} />
-          </div>
+          <h1 className="font-bold text-lg truncate">
+            {homeTeamName} vs {awayTeamName}
+          </h1>
 
           {match.status === "in_progress" && (
-            <div className="text-sm font-mono text-muted-foreground">
+            <div className="text-sm font-mono text-muted-foreground shrink-0">
               {formatTime(elapsed)}
             </div>
           )}

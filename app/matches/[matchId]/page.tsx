@@ -1,7 +1,6 @@
 "use client";
 
 import { use, useEffect } from "react";
-import Link from "next/link";
 import { useMatch, useMatchSets, useMatchEvents } from "@/hooks/useMatch";
 import { useInsertEvent, useUndoEvent, useStartMatch } from "@/hooks/useMatchActions";
 import { useMatchStore } from "@/stores/matchStore";
@@ -108,15 +107,6 @@ export default function LiveMatchPage({
       />
 
       <div className="flex-1 flex flex-col">
-        <div className="container mx-auto px-4 py-4">
-          <Link
-            href="/matches"
-            className="text-sm text-muted-foreground hover:text-foreground"
-          >
-            ← Volver a partidos
-          </Link>
-        </div>
-
         <Scoreboard
           match={match}
           homeTeamName={match.home_team?.name || "Local"}
@@ -144,14 +134,6 @@ export default function LiveMatchPage({
               </div>
             </div>
           </>
-        )}
-
-        {isScheduled && !isInProgress && (
-          <div className="container mx-auto px-4 py-8 text-center">
-            <p className="text-muted-foreground">
-              Este partido aún no ha comenzado
-            </p>
-          </div>
         )}
       </div>
     </div>
