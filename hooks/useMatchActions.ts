@@ -4,24 +4,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useMatchStore } from "@/stores/matchStore";
 import { matchKeys } from "./useMatches";
-import type { PlayEventInsert, Fundamental } from "@/src/types/volleyball";
-
-const pointQualities: Record<string, string[]> = {
-  serve: ["ace"],
-  reception: [],
-  attack: ["kill"],
-  block: ["kill"],
-  set: [],
-  defense: [],
-};
-
-function isPointEvent(fundamental: string, quality: string): boolean {
-  return pointQualities[fundamental]?.includes(quality) ?? false;
-}
+import type { PlayEventInsert } from "@/src/types/volleyball";
 
 export function useInsertEvent(matchId: string, setNumber: number) {
   const queryClient = useQueryClient();
-  const { addEvent, events, sets, currentSet } = useMatchStore();
+  const { addEvent } = useMatchStore();
   const supabase = createClient();
 
   return useMutation({
@@ -39,14 +26,10 @@ export function useInsertEvent(matchId: string, setNumber: number) {
       await queryClient.cancelQueries({
         queryKey: matchKeys.events(matchId, setNumber),
       });
-      await queryClient.cancelQueries({
-        queryKey: matchKeys.sets(matchId),
-      });
 
       const previousEvents = queryClient.getQueryData(
         matchKeys.events(matchId, setNumber)
       );
-      const previousSets = queryClient.getQueryData(matchKeys.sets(matchId));
 
       // Optimistic update to Zustand
       addEvent(newEvent as any);
@@ -57,41 +40,18 @@ export function useInsertEvent(matchId: string, setNumber: number) {
         { ...newEvent, id: "temp-" + Date.now(), created_at: new Date().toISOString() },
       ]);
 
-      // Optimistic score update
-      if (isPointEvent(newEvent.fundamental, newEvent.quality)) {
-        queryClient.setQueryData(matchKeys.sets(matchId), (old: any) =>
-          old?.map((set: any) =>
-            set.set_number === currentSet
-              ? {
-                  ...set,
-                  points_home:
-                    newEvent.team_id === "home"
-                      ? set.points_home + 1
-                      : set.points_home,
-                  points_away:
-                    newEvent.team_id !== "home"
-                      ? set.points_away + 1
-                      : set.points_away,
-                }
-              : set
-          )
-        );
-      }
-
-      return { previousEvents, previousSets };
+      return { previousEvents };
     },
     onError: (err, newEvent, context) => {
       queryClient.setQueryData(
         matchKeys.events(matchId, setNumber),
         context?.previousEvents
       );
-      queryClient.setQueryData(matchKeys.sets(matchId), context?.previousSets);
       // Revert Zustand state
       useMatchStore.getState().undo();
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: matchKeys.events(matchId, setNumber) });
-      queryClient.invalidateQueries({ queryKey: matchKeys.sets(matchId) });
     },
   });
 }
@@ -114,14 +74,10 @@ export function useUndoEvent(matchId: string, setNumber: number) {
       await queryClient.cancelQueries({
         queryKey: matchKeys.events(matchId, setNumber),
       });
-      await queryClient.cancelQueries({
-        queryKey: matchKeys.sets(matchId),
-      });
 
       const previousEvents = queryClient.getQueryData(
         matchKeys.events(matchId, setNumber)
       );
-      const previousSets = queryClient.getQueryData(matchKeys.sets(matchId));
 
       // Optimistic undo in Zustand
       undo();
@@ -131,18 +87,16 @@ export function useUndoEvent(matchId: string, setNumber: number) {
         old?.filter((e: any) => e.id !== eventId)
       );
 
-      return { previousEvents, previousSets };
+      return { previousEvents };
     },
     onError: (err, eventId, context) => {
       queryClient.setQueryData(
         matchKeys.events(matchId, setNumber),
         context?.previousEvents
       );
-      queryClient.setQueryData(matchKeys.sets(matchId), context?.previousSets);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: matchKeys.events(matchId, setNumber) });
-      queryClient.invalidateQueries({ queryKey: matchKeys.sets(matchId) });
     },
   });
 }

@@ -21,9 +21,9 @@ import { useOrganization, useUserTeams } from "@/hooks/useOrganization";
 
 // Lista de equipos rivales conocidos (U15 ORO)
 const KNOWN_OPPONENTS = [
-  "Albert Einstein Jr",
+  "Albert Einstein AZ",
   "Albert Einstein",
-  "Nimbles",
+  "Nimbles JR",
   "Nimbles B",
   "Vipers",
   "San Martin",

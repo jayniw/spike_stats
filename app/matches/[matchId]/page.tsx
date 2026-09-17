@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useState, useCallback } from "react";
 import { useMatch, useMatchSets, useMatchEvents } from "@/hooks/useMatch";
 import { useInsertEvent, useUndoEvent, useStartMatch } from "@/hooks/useMatchActions";
 import { useMatchStore } from "@/stores/matchStore";
@@ -12,6 +12,7 @@ import { EventGrid } from "@/components/organisms/EventGrid";
 import { UndoStack } from "@/components/organisms/UndoStack";
 import { PlayerSelector } from "@/components/molecules/PlayerSelector";
 import type { Fundamental } from "@/src/types/volleyball";
+import type { MatchState } from "@/lib/matchStateMachine";
 
 interface Player {
   id: string;
@@ -121,6 +122,15 @@ export default function LiveMatchPage({
     }
   }, [events, setEvents]);
 
+  const handleSetLocked = useCallback((setNumber: number) => {
+    console.log(`Set ${setNumber} locked`);
+  }, []);
+
+  const handleMatchComplete = useCallback((matchState: MatchState) => {
+    console.log("Match complete!", matchState);
+    // TODO: Update match status in database
+  }, []);
+
   if (loadingMatch || loadingSets) {
     return <div className="text-center py-8">Cargando partido...</div>;
   }
@@ -198,6 +208,8 @@ export default function LiveMatchPage({
           awayTeamName={match.opponent_name || match.away_team?.name || "Visitante"}
           sets={storeSets}
           onUpdateScore={handleUpdateScore}
+          onSetLocked={handleSetLocked}
+          onMatchComplete={handleMatchComplete}
         />
 
         {isInProgress && (

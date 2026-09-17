@@ -8,12 +8,14 @@ import { Button } from "@/components/ui/button";
 export function Header() {
   const pathname = usePathname();
   const router = useRouter();
-  const { signOut } = useAuth();
+  const { user, loading, signOut } = useAuth();
 
   const handleLogout = async () => {
     await signOut();
     router.push("/login");
   };
+
+  if (loading || !user) return null;
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b bg-background">
