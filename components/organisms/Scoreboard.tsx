@@ -33,13 +33,12 @@ function ScoreBox({
   disabled: boolean;
   onToggleLock: () => void;
 }) {
-  const touchStartY = useRef<number | null>(null);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+  const lastTapTime = useRef<number>(0);
   const didLongPress = useRef(false);
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (disabled || locked) return;
-    touchStartY.current = e.touches[0].clientY;
+    if (disabled && !locked) return;
     didLongPress.current = false;
 
     longPressTimer.current = setTimeout(() => {
@@ -49,35 +48,27 @@ function ScoreBox({
     }, 500);
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
-    }
-
-    if (touchStartY.current === null || disabled || locked) return;
-    
-    const deltaY = e.touches[0].clientY - touchStartY.current;
-    
-    // If swiping down significantly, prevent page refresh and decrease score
-    if (deltaY > 30 && value > 0) {
-      e.preventDefault();
-      onDecrement();
-      touchStartY.current = null;
-    }
-  };
-
   const handleTouchEnd = () => {
     if (longPressTimer.current) {
       clearTimeout(longPressTimer.current);
       longPressTimer.current = null;
     }
-    touchStartY.current = null;
   };
 
   const handleClick = () => {
-    if (!locked && !disabled && !didLongPress.current) {
-      onIncrement();
+    if (disabled || didLongPress.current) return;
+
+    const now = Date.now();
+    const timeSinceLastTap = now - lastTapTime.current;
+
+    if (timeSinceLastTap < 300 && value > 0 && !locked) {
+      onDecrement();
+      lastTapTime.current = 0;
+    } else {
+      if (!locked) {
+        onIncrement();
+      }
+      lastTapTime.current = now;
     }
   };
 
@@ -85,7 +76,6 @@ function ScoreBox({
     <button
       onClick={handleClick}
       onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       className={cn(
         "relative w-10 h-10 rounded-lg text-lg font-bold",
