@@ -55,6 +55,13 @@ function ScoreBox({
 
     const deltaY = e.touches[0].clientY - touchStartY.current;
 
+    if (Math.abs(deltaY) > 10) {
+      if (longPressTimer.current) {
+        clearTimeout(longPressTimer.current);
+        longPressTimer.current = null;
+      }
+    }
+
     if (deltaY > 20) {
       setSwipeHint("down");
     } else {
