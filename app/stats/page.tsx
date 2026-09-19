@@ -1,14 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import { useStatsStore } from "@/stores/statsStore";
 import { usePlayersByTeam } from "@/hooks/usePlayersBySeason";
 import { useMultiPlayerStats } from "@/hooks/useMultiPlayerStats";
 import { StatsFilters } from "@/components/molecules/StatsFilters";
 import { MultiPlayerTable } from "@/components/organisms/MultiPlayerTable";
 import { PlayerDetailCards } from "@/components/organisms/PlayerDetailCards";
-import { BarChart2 } from "lucide-react";
+import { BarChart2, SlidersHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function StatsPage() {
+  const [showFilters, setShowFilters] = useState(true);
   const { season, teamId, matchId, playerId } = useStatsStore();
 
   const { data: players, isLoading: loadingPlayers } =
@@ -28,12 +31,23 @@ export default function StatsPage() {
 
   return (
     <div className="space-y-6 pb-safe">
-      <div className="flex items-center gap-2">
-        <BarChart2 className="size-5" />
-        <h1 className="text-xl font-bold">Estadísticas</h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <BarChart2 className="size-5" />
+          <h1 className="text-xl font-bold">Estadísticas</h1>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setShowFilters(!showFilters)}
+          className={showFilters ? "text-primary" : "text-muted-foreground"}
+          title={showFilters ? "Ocultar filtros" : "Mostrar filtros"}
+        >
+          <SlidersHorizontal className="size-5" />
+        </Button>
       </div>
 
-      <StatsFilters />
+      {showFilters && <StatsFilters />}
 
       {showEmpty && (
         <div className="text-center py-12 text-muted-foreground">
