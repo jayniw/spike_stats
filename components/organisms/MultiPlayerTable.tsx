@@ -2,6 +2,12 @@
 
 import { useState } from "react";
 import type { PlayerMatchStats, PlayerSeasonStats } from "@/src/types/volleyball";
+import { HelpCircle } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface PlayerRow {
   id: string;
@@ -172,6 +178,16 @@ export function MultiPlayerTable({
     );
   };
 
+  const columns: { key: SortKey; label: string; help: string }[] = [
+    { key: "reception_rating", label: "Rec. Rating", help: "Rating de recepción: promedio ponderado (3=excelente, 2=positiva, 1=negativa)" },
+    { key: "receptions_total", label: "Rec. Total", help: "Total de recepciones realizadas" },
+    { key: "attack_efficiency", label: "Atq. Ef.", help: "Eficiencia de ataque: (kills - errores) / total ataques" },
+    { key: "attacks_total", label: "Atq. Total", help: "Total de ataques realizados" },
+    { key: "attacks_kills", label: "Atq. Kills", help: "Ataques que terminaron en punto (kills)" },
+    { key: "blocks_total", label: "Bloq. Total", help: "Total de bloqueos realizados" },
+    { key: "blocks_kills", label: "Bloq. Kills", help: "Bloqueos que terminaron en punto" },
+  ];
+
   return (
     <div className="overflow-x-auto -mx-4 px-4">
       <table className="w-full text-sm min-w-[600px]">
@@ -183,62 +199,26 @@ export function MultiPlayerTable({
             <th className="text-left py-2 px-3 sticky left-10 bg-background z-10">
               Jugador
             </th>
-            <th
-              className="text-right py-2 px-2 cursor-pointer select-none"
-              onClick={() => handleSort("reception_rating")}
-              title="Rating de recepción: promedio ponderado (3=excelente, 2=positiva, 1=negativa)"
-            >
-              Rec. Rating
-              <SortIndicator columnKey="reception_rating" />
-            </th>
-            <th
-              className="text-right py-2 px-2 cursor-pointer select-none"
-              onClick={() => handleSort("receptions_total")}
-              title="Total de recepciones realizadas"
-            >
-              Rec. Total
-              <SortIndicator columnKey="receptions_total" />
-            </th>
-            <th
-              className="text-right py-2 px-2 cursor-pointer select-none"
-              onClick={() => handleSort("attack_efficiency")}
-              title="Eficiencia de ataque: (kills - errores) / total ataques"
-            >
-              Atq. Ef.
-              <SortIndicator columnKey="attack_efficiency" />
-            </th>
-            <th
-              className="text-right py-2 px-2 cursor-pointer select-none"
-              onClick={() => handleSort("attacks_total")}
-              title="Total de ataques realizados"
-            >
-              Atq. Total
-              <SortIndicator columnKey="attacks_total" />
-            </th>
-            <th
-              className="text-right py-2 px-2 cursor-pointer select-none"
-              onClick={() => handleSort("attacks_kills")}
-              title="Ataques que terminaron en punto (kills)"
-            >
-              Atq. Kills
-              <SortIndicator columnKey="attacks_kills" />
-            </th>
-            <th
-              className="text-right py-2 px-2 cursor-pointer select-none"
-              onClick={() => handleSort("blocks_total")}
-              title="Total de bloqueos realizados"
-            >
-              Bloq. Total
-              <SortIndicator columnKey="blocks_total" />
-            </th>
-            <th
-              className="text-right py-2 px-2 cursor-pointer select-none"
-              onClick={() => handleSort("blocks_kills")}
-              title="Bloqueos que terminaron en punto"
-            >
-              Bloq. Kills
-              <SortIndicator columnKey="blocks_kills" />
-            </th>
+            {columns.map((col) => (
+              <th
+                key={col.key}
+                className="text-right py-2 px-2 cursor-pointer select-none"
+                onClick={() => handleSort(col.key)}
+              >
+                <div className="flex items-center justify-end gap-1">
+                  <span>{col.label}</span>
+                  <Popover>
+                    <PopoverTrigger asChild onClick={(e) => e.stopPropagation()}>
+                      <HelpCircle className="size-3.5 text-muted-foreground hover:text-foreground shrink-0" />
+                    </PopoverTrigger>
+                    <PopoverContent side="top" align="center" className="w-56 text-xs">
+                      {col.help}
+                    </PopoverContent>
+                  </Popover>
+                  <SortIndicator columnKey={col.key} />
+                </div>
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
