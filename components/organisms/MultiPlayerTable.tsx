@@ -177,15 +177,16 @@ export function MultiPlayerTable({
       <table className="w-full text-sm min-w-[600px]">
         <thead>
           <tr className="border-b">
-            <th className="text-left py-2 px-3 sticky left-0 bg-background z-10">
-              Jugador
-            </th>
-            <th className="text-center py-2 px-2">
+            <th className="text-center py-2 px-2 sticky left-0 bg-background z-10 w-10">
               #
+            </th>
+            <th className="text-left py-2 px-3 sticky left-10 bg-background z-10">
+              Jugador
             </th>
             <th
               className="text-right py-2 px-2 cursor-pointer select-none"
               onClick={() => handleSort("reception_rating")}
+              title="Rating de recepción: promedio ponderado (3=excelente, 2=positiva, 1=negativa)"
             >
               Rec. Rating
               <SortIndicator columnKey="reception_rating" />
@@ -193,6 +194,7 @@ export function MultiPlayerTable({
             <th
               className="text-right py-2 px-2 cursor-pointer select-none"
               onClick={() => handleSort("receptions_total")}
+              title="Total de recepciones realizadas"
             >
               Rec. Total
               <SortIndicator columnKey="receptions_total" />
@@ -200,13 +202,15 @@ export function MultiPlayerTable({
             <th
               className="text-right py-2 px-2 cursor-pointer select-none"
               onClick={() => handleSort("attack_efficiency")}
+              title="Eficiencia de ataque: (kills - errores) / total ataques"
             >
-              Atq. Eff.
+              Atq. Ef.
               <SortIndicator columnKey="attack_efficiency" />
             </th>
             <th
               className="text-right py-2 px-2 cursor-pointer select-none"
               onClick={() => handleSort("attacks_total")}
+              title="Total de ataques realizados"
             >
               Atq. Total
               <SortIndicator columnKey="attacks_total" />
@@ -214,6 +218,7 @@ export function MultiPlayerTable({
             <th
               className="text-right py-2 px-2 cursor-pointer select-none"
               onClick={() => handleSort("attacks_kills")}
+              title="Ataques que terminaron en punto (kills)"
             >
               Atq. Kills
               <SortIndicator columnKey="attacks_kills" />
@@ -221,6 +226,7 @@ export function MultiPlayerTable({
             <th
               className="text-right py-2 px-2 cursor-pointer select-none"
               onClick={() => handleSort("blocks_total")}
+              title="Total de bloqueos realizados"
             >
               Bloq. Total
               <SortIndicator columnKey="blocks_total" />
@@ -228,6 +234,7 @@ export function MultiPlayerTable({
             <th
               className="text-right py-2 px-2 cursor-pointer select-none"
               onClick={() => handleSort("blocks_kills")}
+              title="Bloqueos que terminaron en punto"
             >
               Bloq. Kills
               <SortIndicator columnKey="blocks_kills" />
@@ -237,11 +244,11 @@ export function MultiPlayerTable({
         <tbody>
           {playersWithStats.map(({ player, stats }) => (
             <tr key={player.id} className="border-b hover:bg-muted/50">
-              <td className="py-2 px-3 sticky left-0 bg-background z-10 font-medium whitespace-nowrap">
-                {player.first_name} {player.last_name}
-              </td>
-              <td className="text-center py-2 px-2">
+              <td className="text-center py-2 px-2 sticky left-0 bg-background z-10 font-mono text-muted-foreground">
                 {player.jersey_number ?? "-"}
+              </td>
+              <td className="py-2 px-3 sticky left-10 bg-background z-10 font-medium whitespace-nowrap">
+                {player.first_name} {player.last_name}
               </td>
               <td className="text-right py-2 px-2">
                 {decimalFormatter.format(stats.reception_rating)}
