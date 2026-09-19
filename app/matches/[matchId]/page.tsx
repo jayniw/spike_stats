@@ -140,7 +140,7 @@ export default function LiveMatchPage({
       setMatchId(matchId);
       setCurrentSet(match.current_set);
     }
-  }, [match, matchId, setMatchId, setCurrentSet, syncSetScore]);
+  }, [match, matchId, setMatchId, setCurrentSet]);
 
   useEffect(() => {
     if (sets) {
@@ -275,64 +275,71 @@ export default function LiveMatchPage({
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* <MatchHeader
-        match={match}
-        homeTeamName={match.home_team?.name || "Local"}
-        awayTeamName={match.opponent_name || match.away_team?.name || "Visitante"}
-        currentRotation={currentRotation}
-        servingTeam={servingTeam}
-        onStart={isScheduled ? handleStart : undefined}
-      /> */}
-
       <div className="flex-1 flex flex-col">
-        <Scoreboard
-          match={match}
-          homeTeamName={match.home_team?.name || "Local"}
-          awayTeamName={match.opponent_name || match.away_team?.name || "Visitante"}
-          sets={storeSets}
-          onUpdateScore={handleUpdateScore}
-          onSetLocked={handleSetLocked}
-          onMatchComplete={handleMatchComplete}
-        />
-
-        {isInProgress && (
-          <div className="flex gap-2 px-4 pb-2">
-            <button
-              onClick={handleFinishManual}
-              disabled={completeMatch.isPending}
-              className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 disabled:opacity-50"
-            >
-              {completeMatch.isPending ? "Finalizando..." : "Finalizar Partido"}
-            </button>
-            <button
-              onClick={handleAbandon}
-              disabled={abandonMatch.isPending}
-              className="px-3 py-1.5 bg-destructive/10 text-destructive text-sm rounded-lg hover:bg-destructive/20 disabled:opacity-50"
-            >
-              {abandonMatch.isPending ? "Abandonando..." : "Abandonar"}
-            </button>
+        {/* Header del partido - siempre visible */}
+        <div className="px-4 py-3 border-b">
+          <div className="flex items-center justify-between">
+            <div className="text-sm font-medium">{match.home_team?.name || "Local"}</div>
+            <div className="text-xs text-muted-foreground">vs</div>
+            <div className="text-sm font-medium">{match.opponent_name || match.away_team?.name || "Visitante"}</div>
           </div>
-        )}
+        </div>
 
-        {match.status === "completed" && (
-          <div className="px-4 pb-2">
-            <div className="flex items-center gap-2">
-              <div className="text-sm text-green-600 font-medium">
-                Partido finalizado
-              </div>
-              <button
-                onClick={handleReopen}
-                disabled={reopenMatch.isPending}
-                className="px-3 py-1.5 bg-muted text-sm rounded-lg hover:bg-muted/80 disabled:opacity-50"
-              >
-                {reopenMatch.isPending ? "Reabriendo..." : "Reabrir"}
-              </button>
+        {/* Estado: Programado - botón para iniciar */}
+        {isScheduled && (
+          <div className="flex-1 flex flex-col items-center justify-center gap-6 px-4">
+            <div className="text-center space-y-2">
+              <div className="text-muted-foreground">Partido programado</div>
+              {match.match_date && (
+                <div className="text-sm text-muted-foreground">
+                  {new Date(match.match_date).toLocaleDateString("es-CL", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                  })}
+                </div>
+              )}
             </div>
+            <button
+              onClick={handleStart}
+              disabled={startMatch.isPending}
+              className="px-6 py-3 bg-primary text-primary-foreground font-medium rounded-xl hover:bg-primary/90 disabled:opacity-50 active:scale-95 transition-all"
+            >
+              {startMatch.isPending ? "Iniciando..." : "Iniciar Partido"}
+            </button>
           </div>
         )}
 
+        {/* Estado: En progreso */}
         {isInProgress && (
           <>
+            <Scoreboard
+              match={match}
+              homeTeamName={match.home_team?.name || "Local"}
+              awayTeamName={match.opponent_name || match.away_team?.name || "Visitante"}
+              sets={storeSets}
+              onUpdateScore={handleUpdateScore}
+              onSetLocked={handleSetLocked}
+              onMatchComplete={handleMatchComplete}
+            />
+
+            <div className="flex gap-2 px-4 pb-2">
+              <button
+                onClick={handleFinishManual}
+                disabled={completeMatch.isPending}
+                className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 disabled:opacity-50"
+              >
+                {completeMatch.isPending ? "Finalizando..." : "Finalizar Partido"}
+              </button>
+              <button
+                onClick={handleAbandon}
+                disabled={abandonMatch.isPending}
+                className="px-3 py-1.5 bg-destructive/10 text-destructive text-sm rounded-lg hover:bg-destructive/20 disabled:opacity-50"
+              >
+                {abandonMatch.isPending ? "Abandonando..." : "Abandonar"}
+              </button>
+            </div>
+
             <PlayerSelector
               players={players}
               selectedPlayerId={selectedPlayerId}
@@ -362,7 +369,47 @@ export default function LiveMatchPage({
                 />
               </div>
             </div>
-           </>
+          </>
+        )}
+
+        {/* Estado: Finalizado */}
+        {match.status === "completed" && (
+          <div className="flex-1 flex flex-col items-center justify-center gap-4 px-4">
+            <div className="text-center space-y-2">
+              <div className="text-lg font-medium text-green-600">Partido finalizado</div>
+              <Scoreboard
+                match={match}
+                homeTeamName={match.home_team?.name || "Local"}
+                awayTeamName={match.opponent_name || match.away_team?.name || "Visitante"}
+                sets={storeSets}
+                onUpdateScore={() => {}}
+              />
+            </div>
+            <button
+              onClick={handleReopen}
+              disabled={reopenMatch.isPending}
+              className="px-4 py-2 bg-muted text-sm rounded-lg hover:bg-muted/80 disabled:opacity-50"
+            >
+              {reopenMatch.isPending ? "Reabriendo..." : "Reabrir Partido"}
+            </button>
+          </div>
+        )}
+
+        {/* Estado: Abandonado */}
+        {match.status === "abandoned" && (
+          <div className="flex-1 flex flex-col items-center justify-center gap-4 px-4">
+            <div className="text-center space-y-2">
+              <div className="text-lg font-medium text-destructive">Partido abandonado</div>
+              <div className="text-sm text-muted-foreground">Este partido fue abandonado</div>
+            </div>
+            <button
+              onClick={handleReopen}
+              disabled={reopenMatch.isPending}
+              className="px-4 py-2 bg-muted text-sm rounded-lg hover:bg-muted/80 disabled:opacity-50"
+            >
+              {reopenMatch.isPending ? "Reabriendo..." : "Reabrir Partido"}
+            </button>
+          </div>
         )}
       </div>
 
