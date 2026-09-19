@@ -122,14 +122,25 @@ export default function LiveMatchPage({
 
   useEffect(() => {
     if (match) {
-      const currentStoreMatchId = useMatchStore.getState().matchId;
-      if (currentStoreMatchId !== matchId) {
-        useMatchStore.getState().reset();
+      const currentStore = useMatchStore.getState();
+      if (currentStore.matchId && currentStore.matchId !== matchId) {
+        // Sync old match data to Supabase before resetting
+        const oldSets = currentStore.sets
+          .filter((s) => s.id)
+          .map((s) => ({
+            id: s.id,
+            points_home: s.points_home,
+            points_away: s.points_away,
+          }));
+        if (oldSets.length > 0) {
+          syncSetScore.mutate(oldSets);
+        }
+        currentStore.reset();
       }
       setMatchId(matchId);
       setCurrentSet(match.current_set);
     }
-  }, [match, matchId, setMatchId, setCurrentSet]);
+  }, [match, matchId, setMatchId, setCurrentSet, syncSetScore]);
 
   useEffect(() => {
     if (sets) {
