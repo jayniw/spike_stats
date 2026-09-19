@@ -151,3 +151,72 @@ export function useStartMatch(matchId: string) {
     },
   });
 }
+
+export function useCompleteMatch(matchId: string) {
+  const queryClient = useQueryClient();
+  const supabase = createClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("matches")
+        .update({
+          status: "completed",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", matchId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: matchKeys.detail(matchId) });
+    },
+  });
+}
+
+export function useSyncSetScore(matchId: string) {
+  const queryClient = useQueryClient();
+  const supabase = createClient();
+
+  return useMutation({
+    mutationFn: async (sets: { id: string; points_home: number; points_away: number }[]) => {
+      // Sync each set's score to Supabase
+      for (const set of sets) {
+        const { error } = await supabase
+          .from("match_sets")
+          .update({
+            points_home: set.points_home,
+            points_away: set.points_away,
+          })
+          .eq("id", set.id);
+
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: matchKeys.sets(matchId) });
+    },
+  });
+}
+
+export function useAbandonMatch(matchId: string) {
+  const queryClient = useQueryClient();
+  const supabase = createClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("matches")
+        .update({
+          status: "abandoned",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", matchId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: matchKeys.detail(matchId) });
+    },
+  });
+}

@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { RotationDisplay } from "@/components/molecules/RotationDisplay";
+import { Button } from "@/components/ui/button";
+import { BarChart2 } from "lucide-react";
 import type { MatchRow, ServingTeam } from "@/src/types/volleyball";
 
 interface MatchHeaderProps {
@@ -26,6 +29,7 @@ export function MatchHeader({
   onStart,
 }: MatchHeaderProps) {
   const [elapsed, setElapsed] = useState(0);
+  const router = useRouter();
 
   useEffect(() => {
     if (match.status !== "in_progress" || !match.started_at) return;
@@ -60,6 +64,18 @@ export function MatchHeader({
             <div className="text-sm font-mono text-muted-foreground shrink-0">
               {formatTime(elapsed)}
             </div>
+          )}
+
+          {(match.status === "in_progress" || match.status === "completed") && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push(`/stats?matchId=${match.id}`)}
+              className="shrink-0"
+            >
+              <BarChart2 className="size-4 mr-1" />
+              Stats
+            </Button>
           )}
         </div>
 

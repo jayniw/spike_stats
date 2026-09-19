@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import type {
   PlayEventWithQuality,
   MatchSetWithScore,
@@ -30,60 +31,9 @@ interface MatchState {
   reset: () => void;
 }
 
-export const useMatchStore = create<MatchState>((set, get) => ({
-  matchId: null,
-  sets: [],
-  events: [],
-  currentSet: 1,
-  currentRotation: 1,
-  servingTeam: "home",
-  serverPosition: 1,
-  undoStack: [],
-  maxUndo: 50,
-  selectedPlayerId: null,
-
-  setMatchId: (id) => set({ matchId: id }),
-
-  setSets: (sets) => set({ sets }),
-
-  setEvents: (events) => set({ events }),
-
-  setCurrentSet: (setNumber) => set({ currentSet: setNumber }),
-
-  setSelectedPlayerId: (playerId) => set({ selectedPlayerId: playerId }),
-
-  addEvent: (event) => {
-    const state = get();
-    const newEvents = [...state.events, event];
-    const newUndoStack = [...state.undoStack, event].slice(-state.maxUndo);
-
-    set({
-      events: newEvents,
-      undoStack: newUndoStack,
-    });
-  },
-
-  undo: () => {
-    const state = get();
-    if (state.undoStack.length === 0) return;
-
-    const newEvents = state.events.slice(0, -1);
-    const newUndoStack = state.undoStack.slice(0, -1);
-
-    set({
-      events: newEvents,
-      undoStack: newUndoStack,
-    });
-  },
-
-  canUndo: () => get().undoStack.length > 0,
-
-  setRotation: (rot) => set({ currentRotation: rot }),
-
-  setServer: (team, pos) => set({ servingTeam: team, serverPosition: pos }),
-
-  reset: () =>
-    set({
+export const useMatchStore = create<MatchState>()(
+  persist(
+    (set, get) => ({
       matchId: null,
       sets: [],
       events: [],
@@ -92,8 +42,76 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       servingTeam: "home",
       serverPosition: 1,
       undoStack: [],
+      maxUndo: 50,
       selectedPlayerId: null,
+
+      setMatchId: (id) => set({ matchId: id }),
+
+      setSets: (sets) => set({ sets }),
+
+      setEvents: (events) => set({ events }),
+
+      setCurrentSet: (setNumber) => set({ currentSet: setNumber }),
+
+      setSelectedPlayerId: (playerId) => set({ selectedPlayerId: playerId }),
+
+      addEvent: (event) => {
+        const state = get();
+        const newEvents = [...state.events, event];
+        const newUndoStack = [...state.undoStack, event].slice(-state.maxUndo);
+
+        set({
+          events: newEvents,
+          undoStack: newUndoStack,
+        });
+      },
+
+      undo: () => {
+        const state = get();
+        if (state.undoStack.length === 0) return;
+
+        const newEvents = state.events.slice(0, -1);
+        const newUndoStack = state.undoStack.slice(0, -1);
+
+        set({
+          events: newEvents,
+          undoStack: newUndoStack,
+        });
+      },
+
+      canUndo: () => get().undoStack.length > 0,
+
+      setRotation: (rot) => set({ currentRotation: rot }),
+
+      setServer: (team, pos) => set({ servingTeam: team, serverPosition: pos }),
+
+      reset: () =>
+        set({
+          matchId: null,
+          sets: [],
+          events: [],
+          currentSet: 1,
+          currentRotation: 1,
+          servingTeam: "home",
+          serverPosition: 1,
+          undoStack: [],
+          selectedPlayerId: null,
+        }),
     }),
-}));
+    {
+      name: "match-storage",
+      partialize: (state) => ({
+        matchId: state.matchId,
+        sets: state.sets,
+        events: state.events,
+        currentSet: state.currentSet,
+        currentRotation: state.currentRotation,
+        servingTeam: state.servingTeam,
+        serverPosition: state.serverPosition,
+        selectedPlayerId: state.selectedPlayerId,
+      }),
+    }
+  )
+);
 
 

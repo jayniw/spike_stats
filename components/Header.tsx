@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { BarChart2 } from "lucide-react";
 
 export function Header() {
   const pathname = usePathname();
@@ -40,6 +41,15 @@ export function Header() {
             }`}
           >
             Nuevo
+          </Link>
+          <Link
+            href="/stats"
+            className={`text-sm font-medium transition-colors hover:text-primary flex items-center gap-1 ${
+              pathname === "/stats" ? "text-primary" : "text-muted-foreground"
+            }`}
+          >
+            <BarChart2 className="size-4" />
+            Estadísticas
           </Link>
           <Button variant="ghost" size="sm" onClick={handleLogout}>
             Salir

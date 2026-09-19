@@ -2,7 +2,7 @@
 
 import { use, useEffect, useState, useCallback } from "react";
 import { useMatch, useMatchSets, useMatchEvents } from "@/hooks/useMatch";
-import { useInsertEvent, useUndoEvent, useStartMatch } from "@/hooks/useMatchActions";
+import { useInsertEvent, useUndoEvent, useStartMatch, useCompleteMatch, useAbandonMatch, useSyncSetScore } from "@/hooks/useMatchActions";
 import { useMatchStore } from "@/stores/matchStore";
 import { useOrganization } from "@/hooks/useOrganization";
 import { createClient } from "@/lib/supabase/client";
@@ -67,6 +67,9 @@ export default function LiveMatchPage({
   const insertEvent = useInsertEvent(matchId, match?.current_set || 1);
   const undoEvent = useUndoEvent(matchId, match?.current_set || 1);
   const startMatch = useStartMatch(matchId);
+  const completeMatch = useCompleteMatch(matchId);
+  const abandonMatch = useAbandonMatch(matchId);
+  const syncSetScore = useSyncSetScore(matchId);
 
   // Load players from roster when match loads
   useEffect(() => {
@@ -112,9 +115,15 @@ export default function LiveMatchPage({
 
   useEffect(() => {
     if (sets) {
+      // Only load from Supabase if local store is empty for this match
+      const localStore = useMatchStore.getState();
+      if (localStore.matchId === matchId && localStore.sets.length > 0) {
+        // Local data exists, keep it (local-first)
+        return;
+      }
       setSets(sets as any);
     }
-  }, [sets, setSets]);
+  }, [sets, setSets, matchId]);
 
   useEffect(() => {
     if (events) {
@@ -123,13 +132,42 @@ export default function LiveMatchPage({
   }, [events, setEvents]);
 
   const handleSetLocked = useCallback((setNumber: number) => {
-    console.log(`Set ${setNumber} locked`);
-  }, []);
+    // Sync set scores to Supabase when a set is locked
+    const currentSets = useMatchStore.getState().sets;
+    const setsToSync = currentSets
+      .filter((s) => s.id)
+      .map((s) => ({
+        id: s.id,
+        points_home: s.points_home,
+        points_away: s.points_away,
+      }));
+
+    if (setsToSync.length > 0) {
+      syncSetScore.mutate(setsToSync);
+    }
+  }, [syncSetScore]);
 
   const handleMatchComplete = useCallback((matchState: MatchState) => {
-    console.log("Match complete!", matchState);
-    // TODO: Update match status in database
-  }, []);
+    if (matchState.isMatchComplete) {
+      // Sync all set scores first, then complete
+      const currentSets = useMatchStore.getState().sets;
+      const setsToSync = currentSets
+        .filter((s) => s.id)
+        .map((s) => ({
+          id: s.id,
+          points_home: s.points_home,
+          points_away: s.points_away,
+        }));
+
+      if (setsToSync.length > 0) {
+        syncSetScore.mutate(setsToSync, {
+          onSuccess: () => completeMatch.mutate(),
+        });
+      } else {
+        completeMatch.mutate();
+      }
+    }
+  }, [completeMatch, syncSetScore]);
 
   if (loadingMatch || loadingSets) {
     return <div className="text-center py-8">Cargando partido...</div>;
@@ -175,6 +213,18 @@ export default function LiveMatchPage({
     startMatch.mutate({ format: match.format });
   };
 
+  const handleFinishManual = () => {
+    if (confirm("¿Finalizar partido?")) {
+      completeMatch.mutate();
+    }
+  };
+
+  const handleAbandon = () => {
+    if (confirm("¿Abandonar partido?")) {
+      abandonMatch.mutate();
+    }
+  };
+
   const handleUpdateScore = (setNumber: number, isHome: boolean, delta: number) => {
     const newSets = storeSets.map((set) => {
       if (set.set_number !== setNumber) return set;
@@ -211,6 +261,33 @@ export default function LiveMatchPage({
           onSetLocked={handleSetLocked}
           onMatchComplete={handleMatchComplete}
         />
+
+        {isInProgress && (
+          <div className="flex gap-2 px-4 pb-2">
+            <button
+              onClick={handleFinishManual}
+              disabled={completeMatch.isPending}
+              className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 disabled:opacity-50"
+            >
+              {completeMatch.isPending ? "Finalizando..." : "Finalizar Partido"}
+            </button>
+            <button
+              onClick={handleAbandon}
+              disabled={abandonMatch.isPending}
+              className="px-3 py-1.5 bg-destructive/10 text-destructive text-sm rounded-lg hover:bg-destructive/20 disabled:opacity-50"
+            >
+              {abandonMatch.isPending ? "Abandonando..." : "Abandonar"}
+            </button>
+          </div>
+        )}
+
+        {match.status === "completed" && (
+          <div className="px-4 pb-2">
+            <div className="text-sm text-green-600 font-medium">
+              Partido finalizado
+            </div>
+          </div>
+        )}
 
         {isInProgress && (
           <>
