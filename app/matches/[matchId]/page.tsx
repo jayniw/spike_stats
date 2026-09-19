@@ -122,6 +122,10 @@ export default function LiveMatchPage({
 
   useEffect(() => {
     if (match) {
+      const currentStoreMatchId = useMatchStore.getState().matchId;
+      if (currentStoreMatchId !== matchId) {
+        useMatchStore.getState().reset();
+      }
       setMatchId(matchId);
       setCurrentSet(match.current_set);
     }
@@ -129,12 +133,6 @@ export default function LiveMatchPage({
 
   useEffect(() => {
     if (sets) {
-      // Only load from Supabase if local store is empty for this match
-      const localStore = useMatchStore.getState();
-      if (localStore.matchId === matchId && localStore.sets.length > 0) {
-        // Local data exists, keep it (local-first)
-        return;
-      }
       setSets(sets as any);
     }
   }, [sets, setSets, matchId]);
