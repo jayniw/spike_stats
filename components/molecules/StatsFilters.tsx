@@ -34,16 +34,16 @@ export function StatsFilters() {
   const { data: matches, isLoading: loadingMatches } = useMatchesByTeam(teamId);
 
   return (
-    <div className="flex flex-wrap gap-4 items-end">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 items-end">
       {/* Temporada */}
-      <div className="space-y-1.5">
+      <div className="space-y-1.5 col-span-2 sm:col-span-1">
         <Label htmlFor="season">Temporada</Label>
         <Select
           value={season || ""}
           onValueChange={(value) => setSeason(value || null)}
           disabled={loadingSeasons}
         >
-          <SelectTrigger className="w-[180px]" id="season">
+          <SelectTrigger className="w-full" id="season">
             <SelectValue placeholder="Seleccionar temporada" />
           </SelectTrigger>
           <SelectContent>
@@ -57,14 +57,14 @@ export function StatsFilters() {
       </div>
 
       {/* Equipo */}
-      <div className="space-y-1.5">
+      <div className="space-y-1.5 col-span-2 sm:col-span-1">
         <Label htmlFor="team">Equipo</Label>
         <Select
           value={teamId || ""}
           onValueChange={(value) => setTeamId(value || null)}
           disabled={!season || loadingTeams}
         >
-          <SelectTrigger className="w-[180px]" id="team">
+          <SelectTrigger className="w-full" id="team">
             <SelectValue placeholder="Seleccionar equipo" />
           </SelectTrigger>
           <SelectContent>
@@ -78,7 +78,7 @@ export function StatsFilters() {
       </div>
 
       {/* Jugador */}
-      <div className="space-y-1.5">
+      <div className="space-y-1.5 col-span-1">
         <Label htmlFor="player">Jugador</Label>
         <Select
           value={playerId || "__all__"}
@@ -87,7 +87,7 @@ export function StatsFilters() {
           }
           disabled={!teamId || loadingPlayers}
         >
-          <SelectTrigger className="w-[180px]" id="player">
+          <SelectTrigger className="w-full" id="player">
             <SelectValue placeholder="Todos" />
           </SelectTrigger>
           <SelectContent>
@@ -103,7 +103,7 @@ export function StatsFilters() {
       </div>
 
       {/* Partido */}
-      <div className="space-y-1.5">
+      <div className="space-y-1.5 col-span-1">
         <Label htmlFor="match">Partido</Label>
         <Select
           value={matchId || "__all__"}
@@ -112,7 +112,7 @@ export function StatsFilters() {
           }
           disabled={!teamId || loadingMatches}
         >
-          <SelectTrigger className="w-[220px]" id="match">
+          <SelectTrigger className="w-full" id="match">
             <SelectValue placeholder="Todos" />
           </SelectTrigger>
           <SelectContent>
@@ -127,7 +127,7 @@ export function StatsFilters() {
       </div>
 
       {/* Set */}
-      <div className="space-y-1.5">
+      <div className="space-y-1.5 col-span-2 sm:col-span-1">
         <Label htmlFor="set">Set</Label>
         <Select
           value={setNumber?.toString() || "__all__"}
@@ -136,7 +136,7 @@ export function StatsFilters() {
           }
           disabled={!matchId}
         >
-          <SelectTrigger className="w-[120px]" id="set">
+          <SelectTrigger className="w-full" id="set">
             <SelectValue placeholder="Todos" />
           </SelectTrigger>
           <SelectContent>

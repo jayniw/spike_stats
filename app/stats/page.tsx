@@ -27,7 +27,7 @@ export default function StatsPage() {
   const showCards = season && teamId && !!playerId;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-safe">
       <div className="flex items-center gap-2">
         <BarChart2 className="size-5" />
         <h1 className="text-xl font-bold">Estadísticas</h1>

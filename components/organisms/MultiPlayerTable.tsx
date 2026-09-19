@@ -173,14 +173,14 @@ export function MultiPlayerTable({
   };
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+    <div className="overflow-x-auto -mx-4 px-4">
+      <table className="w-full text-sm min-w-[600px]">
         <thead>
           <tr className="border-b">
             <th className="text-left py-2 px-3 sticky left-0 bg-background z-10">
               Jugador
             </th>
-            <th className="text-center py-2 px-2 sticky left-[120px] bg-background z-10">
+            <th className="text-center py-2 px-2">
               #
             </th>
             <th
@@ -240,7 +240,7 @@ export function MultiPlayerTable({
               <td className="py-2 px-3 sticky left-0 bg-background z-10 font-medium whitespace-nowrap">
                 {player.first_name} {player.last_name}
               </td>
-              <td className="text-center py-2 px-2 sticky left-[120px] bg-background z-10">
+              <td className="text-center py-2 px-2">
                 {player.jersey_number ?? "-"}
               </td>
               <td className="text-right py-2 px-2">
