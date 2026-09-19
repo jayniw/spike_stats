@@ -2,7 +2,17 @@
 
 import { use, useEffect, useState, useCallback } from "react";
 import { useMatch, useMatchSets, useMatchEvents } from "@/hooks/useMatch";
-import { useInsertEvent, useUndoEvent, useStartMatch, useCompleteMatch, useAbandonMatch, useSyncSetScore } from "@/hooks/useMatchActions";
+import { useInsertEvent, useUndoEvent, useStartMatch, useCompleteMatch, useAbandonMatch, useSyncSetScore, useReopenMatch } from "@/hooks/useMatchActions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useMatchStore } from "@/stores/matchStore";
 import { useOrganization } from "@/hooks/useOrganization";
 import { createClient } from "@/lib/supabase/client";
@@ -70,6 +80,10 @@ export default function LiveMatchPage({
   const completeMatch = useCompleteMatch(matchId);
   const abandonMatch = useAbandonMatch(matchId);
   const syncSetScore = useSyncSetScore(matchId);
+  const reopenMatch = useReopenMatch(matchId);
+
+  const [showCompleteDialog, setShowCompleteDialog] = useState(false);
+  const [showAbandonDialog, setShowAbandonDialog] = useState(false);
 
   // Load players from roster when match loads
   useEffect(() => {
@@ -214,15 +228,25 @@ export default function LiveMatchPage({
   };
 
   const handleFinishManual = () => {
-    if (confirm("¿Finalizar partido?")) {
-      completeMatch.mutate();
-    }
+    setShowCompleteDialog(true);
   };
 
   const handleAbandon = () => {
-    if (confirm("¿Abandonar partido?")) {
-      abandonMatch.mutate();
-    }
+    setShowAbandonDialog(true);
+  };
+
+  const confirmFinish = () => {
+    setShowCompleteDialog(false);
+    completeMatch.mutate();
+  };
+
+  const confirmAbandon = () => {
+    setShowAbandonDialog(false);
+    abandonMatch.mutate();
+  };
+
+  const handleReopen = () => {
+    reopenMatch.mutate();
   };
 
   const handleUpdateScore = (setNumber: number, isHome: boolean, delta: number) => {
@@ -283,8 +307,17 @@ export default function LiveMatchPage({
 
         {match.status === "completed" && (
           <div className="px-4 pb-2">
-            <div className="text-sm text-green-600 font-medium">
-              Partido finalizado
+            <div className="flex items-center gap-2">
+              <div className="text-sm text-green-600 font-medium">
+                Partido finalizado
+              </div>
+              <button
+                onClick={handleReopen}
+                disabled={reopenMatch.isPending}
+                className="px-3 py-1.5 bg-muted text-sm rounded-lg hover:bg-muted/80 disabled:opacity-50"
+              >
+                {reopenMatch.isPending ? "Reabriendo..." : "Reabrir"}
+              </button>
             </div>
           </div>
         )}
@@ -320,9 +353,43 @@ export default function LiveMatchPage({
                 />
               </div>
             </div>
-          </>
+           </>
         )}
       </div>
+
+      <AlertDialog open={showCompleteDialog} onOpenChange={setShowCompleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Finalizar partido</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Estás seguro de que deseas finalizar este partido? Esta acción se puede revertir con el botón "Reabrir".
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmFinish} className="bg-green-600 hover:bg-green-700">
+              Finalizar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showAbandonDialog} onOpenChange={setShowAbandonDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Abandonar partido</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Estás seguro de que deseas abandonar este partido? Se marcará como abandonado.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmAbandon} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Abandonar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

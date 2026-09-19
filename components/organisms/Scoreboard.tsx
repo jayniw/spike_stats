@@ -34,12 +34,14 @@ function ScoreBox({
   onToggleLock: () => void;
 }) {
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
-  const lastTapTime = useRef<number>(0);
   const didLongPress = useRef(false);
+  const touchStartY = useRef<number | null>(null);
+  const [swipeHint, setSwipeHint] = useState<"down" | null>(null);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (disabled && !locked) return;
     didLongPress.current = false;
+    touchStartY.current = e.touches[0].clientY;
 
     longPressTimer.current = setTimeout(() => {
       didLongPress.current = true;
@@ -48,27 +50,37 @@ function ScoreBox({
     }, 500);
   };
 
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (disabled || touchStartY.current === null) return;
+
+    const deltaY = e.touches[0].clientY - touchStartY.current;
+
+    if (deltaY > 20) {
+      setSwipeHint("down");
+    } else {
+      setSwipeHint(null);
+    }
+  };
+
   const handleTouchEnd = () => {
     if (longPressTimer.current) {
       clearTimeout(longPressTimer.current);
       longPressTimer.current = null;
     }
+
+    if (swipeHint === "down" && value > 0 && !locked) {
+      onDecrement();
+    }
+
+    touchStartY.current = null;
+    setSwipeHint(null);
   };
 
   const handleClick = () => {
     if (disabled || didLongPress.current) return;
 
-    const now = Date.now();
-    const timeSinceLastTap = now - lastTapTime.current;
-
-    if (timeSinceLastTap < 300 && value > 0 && !locked) {
-      onDecrement();
-      lastTapTime.current = 0;
-    } else {
-      if (!locked) {
-        onIncrement();
-      }
-      lastTapTime.current = now;
+    if (!locked) {
+      onIncrement();
     }
   };
 
@@ -76,11 +88,12 @@ function ScoreBox({
     <button
       onClick={handleClick}
       onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       className={cn(
         "relative w-10 h-10 rounded-lg text-lg font-bold",
         "flex items-center justify-center",
-        "active:scale-95 transition-all select-none",
+        "active:scale-95 transition-all select-none touch-manipulation",
         disabled && "opacity-30 cursor-not-allowed",
         locked
           ? "bg-muted text-muted-foreground opacity-50"
@@ -90,6 +103,11 @@ function ScoreBox({
       {value}
       {locked && (
         <span className="absolute -top-1 -right-1 text-[10px]">🔒</span>
+      )}
+      {swipeHint === "down" && (
+        <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[9px] text-destructive whitespace-nowrap">
+          ↓ -1
+        </span>
       )}
     </button>
   );

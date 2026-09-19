@@ -220,3 +220,25 @@ export function useAbandonMatch(matchId: string) {
     },
   });
 }
+
+export function useReopenMatch(matchId: string) {
+  const queryClient = useQueryClient();
+  const supabase = createClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("matches")
+        .update({
+          status: "in_progress",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", matchId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: matchKeys.detail(matchId) });
+    },
+  });
+}
