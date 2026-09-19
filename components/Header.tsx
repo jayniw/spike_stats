@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { BarChart2, LogOut } from "lucide-react";
+import { BarChart2, LogOut, Trophy } from "lucide-react";
 
 export function Header() {
   const pathname = usePathname();
@@ -28,10 +28,11 @@ export function Header() {
         <nav className="flex items-center gap-1">
           <Link
             href="/matches"
-            className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors hover:bg-accent ${
+            className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors hover:bg-accent flex items-center gap-1.5 ${
               pathname === "/matches" ? "text-primary bg-accent" : "text-muted-foreground"
             }`}
           >
+            <Trophy className="size-4" />
             Partidos
           </Link>
           <Link
