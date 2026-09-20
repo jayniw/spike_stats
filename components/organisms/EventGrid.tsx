@@ -18,7 +18,7 @@ const fundamentals: { fundamental: Fundamental; label: string; qualities: string
   {
     fundamental: "attack",
     label: "Ataque",
-    qualities: ["kill", "in_play", "error"],
+    qualities: ["kill", "in_play", "blocked", "out", "net"],
   },
   {
     fundamental: "reception",
@@ -54,6 +54,9 @@ const qualityLabels: Record<string, string> = {
   assisted: "Asistido",
   assist: "Asistencia",
   dig: "Salvada",
+  blocked: "Bloqueado",
+  out: "Fuera",
+  net: "Red",
 };
 
 export function EventGrid({ onEvent, disabled, loading }: EventGridProps) {

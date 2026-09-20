@@ -182,6 +182,9 @@ export interface PlayerMatchStatsDetail {
     // Ataque
     attacks_total: number;
     attacks_kills: number;
+    attacks_blocked: number;
+    attacks_out: number;
+    attacks_net: number;
     attacks_errors: number;
     attacks_in_play: number;
     attack_efficiency: number;
@@ -225,6 +228,9 @@ export interface PlayerSeasonStatsDetail {
     // Ataque
     attacks_total: number;
     attacks_kills: number;
+    attacks_blocked: number;
+    attacks_out: number;
+    attacks_net: number;
     attacks_errors: number;
     attacks_in_play: number;
     attack_efficiency: number;

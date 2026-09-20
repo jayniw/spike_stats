@@ -13,7 +13,7 @@ export type Enums = {
     fundamental: 'serve' | 'reception' | 'attack' | 'block' | 'set' | 'defense';
     serve_quality: 'ace' | 'in_play' | 'error';
     reception_quality: 'excellent' | 'positive' | 'negative' | 'error';
-    attack_quality: 'kill' | 'in_play' | 'error';
+    attack_quality: 'kill' | 'in_play' | 'blocked' | 'out' | 'net';
     block_quality: 'kill' | 'touch' | 'assisted' | 'error';
     set_quality: 'assist' | 'error';
     defense_quality: 'dig' | 'error';
@@ -397,6 +397,9 @@ export type Functions = {
             reception_rating: number;
             attacks_total: number;
             attacks_kills: number;
+            attacks_blocked: number;
+            attacks_out: number;
+            attacks_net: number;
             attacks_errors: number;
             attacks_in_play: number;
             attack_efficiency: number;
@@ -436,6 +439,9 @@ export type Functions = {
             reception_rating: number;
             attacks_total: number;
             attacks_kills: number;
+            attacks_blocked: number;
+            attacks_out: number;
+            attacks_net: number;
             attacks_errors: number;
             attacks_in_play: number;
             attack_efficiency: number;

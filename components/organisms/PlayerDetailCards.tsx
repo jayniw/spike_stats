@@ -20,6 +20,9 @@ function aggregateSeasonStats(stats: PlayerSeasonStats[]) {
       reception_rating: 0,
       attacks_total: 0,
       attacks_kills: 0,
+      attacks_blocked: 0,
+      attacks_out: 0,
+      attacks_net: 0,
       attacks_errors: 0,
       attacks_in_play: 0,
       attack_efficiency: 0,
@@ -46,6 +49,9 @@ function aggregateSeasonStats(stats: PlayerSeasonStats[]) {
       receptions_error: acc.receptions_error + s.receptions_error,
       attacks_total: acc.attacks_total + s.attacks_total,
       attacks_kills: acc.attacks_kills + s.attacks_kills,
+      attacks_blocked: acc.attacks_blocked + s.attacks_blocked,
+      attacks_out: acc.attacks_out + s.attacks_out,
+      attacks_net: acc.attacks_net + s.attacks_net,
       attacks_errors: acc.attacks_errors + s.attacks_errors,
       attacks_in_play: acc.attacks_in_play + s.attacks_in_play,
       blocks_total: acc.blocks_total + s.blocks_total,
@@ -68,6 +74,9 @@ function aggregateSeasonStats(stats: PlayerSeasonStats[]) {
       receptions_error: 0,
       attacks_total: 0,
       attacks_kills: 0,
+      attacks_blocked: 0,
+      attacks_out: 0,
+      attacks_net: 0,
       attacks_errors: 0,
       attacks_in_play: 0,
       blocks_total: 0,
@@ -152,24 +161,26 @@ export function PlayerDetailCards({ stats, isLoading }: PlayerDetailCardsProps) 
 
   const attackMetrics = [
     { label: "Total", value: detail.attacks_total },
-    { label: "Kills", value: detail.attacks_kills, percentage: pct(detail.attacks_kills, detail.attacks_total) },
-    { label: "Errors", value: detail.attacks_errors, percentage: pct(detail.attacks_errors, detail.attacks_total) },
-    { label: "In Play", value: detail.attacks_in_play, percentage: pct(detail.attacks_in_play, detail.attacks_total) },
-    { label: "Efficiency", value: detail.attack_efficiency },
+    { label: "Puntos", value: detail.attacks_kills, percentage: pct(detail.attacks_kills, detail.attacks_total) },
+    { label: "Bloqueados", value: detail.attacks_blocked ?? 0, percentage: pct(detail.attacks_blocked ?? 0, detail.attacks_total) },
+    { label: "Fuera", value: detail.attacks_out ?? 0, percentage: pct(detail.attacks_out ?? 0, detail.attacks_total) },
+    { label: "Red", value: detail.attacks_net ?? 0, percentage: pct(detail.attacks_net ?? 0, detail.attacks_total) },
+    { label: "En Juego", value: detail.attacks_in_play, percentage: pct(detail.attacks_in_play, detail.attacks_total) },
+    { label: "Eficiencia", value: detail.attack_efficiency },
   ];
 
   const blockMetrics = [
     { label: "Total", value: detail.blocks_total },
-    { label: "Kills", value: detail.blocks_kills, percentage: pct(detail.blocks_kills, detail.blocks_total) },
-    { label: "Touches", value: detail.blocks_touches, percentage: pct(detail.blocks_touches, detail.blocks_total) },
-    { label: "Assisted", value: detail.blocks_assisted, percentage: pct(detail.blocks_assisted, detail.blocks_total) },
-    { label: "Errors", value: detail.blocks_errors, percentage: pct(detail.blocks_errors, detail.blocks_total) },
+    { label: "Puntos", value: detail.blocks_kills, percentage: pct(detail.blocks_kills, detail.blocks_total) },
+    { label: "Toques", value: detail.blocks_touches, percentage: pct(detail.blocks_touches, detail.blocks_total) },
+    { label: "Asistidos", value: detail.blocks_assisted, percentage: pct(detail.blocks_assisted, detail.blocks_total) },
+    { label: "Errores", value: detail.blocks_errors, percentage: pct(detail.blocks_errors, detail.blocks_total) },
   ];
 
   const serveMetrics = [
     { label: "Total", value: detail.sets_total },
-    { label: "Assists", value: detail.sets_assists, percentage: pct(detail.sets_assists, detail.sets_total) },
-    { label: "Errors", value: detail.sets_errors, percentage: pct(detail.sets_errors, detail.sets_total) },
+    { label: "Asistencias", value: detail.sets_assists, percentage: pct(detail.sets_assists, detail.sets_total) },
+    { label: "Errores", value: detail.sets_errors, percentage: pct(detail.sets_errors, detail.sets_total) },
   ];
 
   return (
