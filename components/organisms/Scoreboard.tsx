@@ -210,31 +210,28 @@ export function Scoreboard({
       {/* Center: Current set indicator / advance button */}
       <div className="flex flex-col items-center gap-1 px-4">
         {currentSetData && (
-          <>
-            <span className="text-xs text-muted-foreground">SET {currentSet}</span>
-            <button
-              onClick={handleAdvanceClick}
-              disabled={!canAdvanceSet() || !onAdvanceSet}
-              className={cn(
-                "w-16 h-16 rounded-lg text-xl font-bold transition-all select-none touch-manipulation flex items-center justify-center",
-                canAdvanceSet()
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 cursor-pointer"
-                  : lockedSets.has(currentSet ?? 0)
-                  ? "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
-                  : "bg-primary text-primary-foreground opacity-50 cursor-not-allowed"
-              )}
-              aria-label={canAdvanceSet() && currentSet ? `Avanzar al set ${currentSet + 1}` : "Set actual"}
-            >
-              {canAdvanceSet() ? (
-                <span className="text-2xl">››</span>
-              ) : (
-                <span className="text-lg">{currentSet}</span>
-              )}
-              {lockedSets.has(currentSet ?? 0) && !canAdvanceSet() && (
-                <span className="absolute -top-1 -right-1 text-[10px]">🔒</span>
-              )}
-            </button>
-          </>
+          <button
+            onClick={handleAdvanceClick}
+            disabled={!canAdvanceSet() || !onAdvanceSet}
+            className={cn(
+              "w-20 h-20 rounded-lg font-bold transition-all select-none touch-manipulation flex items-center justify-center",
+              canAdvanceSet()
+                ? "bg-amber-500 text-white hover:bg-amber-600 active:scale-95 cursor-pointer"
+                : lockedSets.has(currentSet ?? 0)
+                ? "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
+                : "bg-muted text-foreground cursor-default"
+            )}
+            aria-label={canAdvanceSet() && currentSet ? `Avanzar al set ${currentSet + 1}` : "Set actual"}
+          >
+            {canAdvanceSet() ? (
+              <span className="text-3xl">››</span>
+            ) : (
+              <span className="text-4xl">{currentSet}</span>
+            )}
+            {lockedSets.has(currentSet ?? 0) && !canAdvanceSet() && (
+              <span className="absolute -top-1 -right-1 text-[10px]">🔒</span>
+            )}
+          </button>
         )}
       </div>
 
