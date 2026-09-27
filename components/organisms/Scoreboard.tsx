@@ -172,68 +172,89 @@ export function Scoreboard({
     return matchState.enabledSets.has(setNumber) && !matchState.isMatchComplete;
   };
 
-  // Determine if "Siguiente Set" button should be shown
-  const showAdvanceButton = () => {
+  // Check if current set is locked and can advance
+  const canAdvanceSet = () => {
     if (!matchState || !currentSet || matchState.isMatchComplete) return false;
-    // Show if current set is locked/completed and there's a next set available
     return lockedSets.has(currentSet) && matchState.enabledSets.has(currentSet + 1);
   };
 
-  return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-between px-4 py-2">
-        {/* Home team */}
-        <div className="flex flex-col items-start gap-1">
-          <span className="text-xs text-muted-foreground">{homeTeamName}</span>
-          <div className="flex gap-1">
-            {sets.map((set) => (
-              <ScoreBox
-                key={set.id}
-                value={set.points_home}
-                locked={lockedSets.has(set.set_number)}
-                disabled={!isSetEnabled(set.set_number)}
-                onIncrement={() => onUpdateScore(set.set_number, true, 1)}
-                onDecrement={() => onUpdateScore(set.set_number, true, -1)}
-                onToggleLock={() => handleToggleLock(set.set_number)}
-              />
-            ))}
-          </div>
-        </div>
+  const handleAdvanceClick = () => {
+    if (canAdvanceSet() && onAdvanceSet && currentSet) {
+      onAdvanceSet(currentSet);
+    }
+  };
 
-        {/* Away team */}
-        <div className="flex flex-col items-start gap-1">
-          <span className="text-xs text-muted-foreground">{awayTeamName}</span>
-          <div className="flex gap-1">
-            {sets.map((set) => (
-              <ScoreBox
-                key={set.id}
-                value={set.points_away}
-                locked={lockedSets.has(set.set_number)}
-                disabled={!isSetEnabled(set.set_number)}
-                onIncrement={() => onUpdateScore(set.set_number, false, 1)}
-                onDecrement={() => onUpdateScore(set.set_number, false, -1)}
-                onToggleLock={() => handleToggleLock(set.set_number)}
-              />
-            ))}
-          </div>
+  // Find current set data
+  const currentSetData = sets.find((s) => s.set_number === currentSet);
+
+  return (
+    <div className="flex items-center justify-between px-4 py-2">
+      {/* Home team scores */}
+      <div className="flex flex-col items-end gap-1 flex-1">
+        <span className="text-xs text-muted-foreground text-right w-full">{homeTeamName}</span>
+        <div className="flex gap-1">
+          {sets.map((set) => (
+            <ScoreBox
+              key={set.id}
+              value={set.points_home}
+              locked={lockedSets.has(set.set_number)}
+              disabled={!isSetEnabled(set.set_number)}
+              onIncrement={() => onUpdateScore(set.set_number, true, 1)}
+              onDecrement={() => onUpdateScore(set.set_number, true, -1)}
+              onToggleLock={() => handleToggleLock(set.set_number)}
+            />
+          ))}
         </div>
       </div>
 
-      {/* Siguiente Set button */}
-      {showAdvanceButton() && onAdvanceSet && (
-        <div className="flex justify-center px-4">
-          <button
-            onClick={() => onAdvanceSet(currentSet!)}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-2"
-            disabled={!showAdvanceButton()}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-            </svg>
-            Siguiente Set
-          </button>
+      {/* Center: Current set indicator / advance button */}
+      <div className="flex flex-col items-center gap-1 px-4">
+        {currentSetData && (
+          <>
+            <span className="text-xs text-muted-foreground">SET {currentSet}</span>
+            <button
+              onClick={handleAdvanceClick}
+              disabled={!canAdvanceSet() || !onAdvanceSet}
+              className={cn(
+                "w-16 h-16 rounded-lg text-xl font-bold transition-all select-none touch-manipulation flex items-center justify-center",
+                canAdvanceSet()
+                  ? "bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 cursor-pointer"
+                  : lockedSets.has(currentSet ?? 0)
+                  ? "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
+                  : "bg-primary text-primary-foreground opacity-50 cursor-not-allowed"
+              )}
+              aria-label={canAdvanceSet() && currentSet ? `Avanzar al set ${currentSet + 1}` : "Set actual"}
+            >
+              {canAdvanceSet() ? (
+                <span className="text-2xl">››</span>
+              ) : (
+                <span className="text-lg">{currentSet}</span>
+              )}
+              {lockedSets.has(currentSet ?? 0) && !canAdvanceSet() && (
+                <span className="absolute -top-1 -right-1 text-[10px]">🔒</span>
+              )}
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* Away team scores */}
+      <div className="flex flex-col items-start gap-1 flex-1">
+        <span className="text-xs text-muted-foreground w-full">{awayTeamName}</span>
+        <div className="flex gap-1">
+          {sets.map((set) => (
+            <ScoreBox
+              key={set.id}
+              value={set.points_away}
+              locked={lockedSets.has(set.set_number)}
+              disabled={!isSetEnabled(set.set_number)}
+              onIncrement={() => onUpdateScore(set.set_number, false, 1)}
+              onDecrement={() => onUpdateScore(set.set_number, false, -1)}
+              onToggleLock={() => handleToggleLock(set.set_number)}
+            />
+          ))}
         </div>
-      )}
+      </div>
     </div>
   );
 }
