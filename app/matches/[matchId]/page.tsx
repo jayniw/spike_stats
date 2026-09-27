@@ -74,8 +74,6 @@ export default function LiveMatchPage({
     setSelectedPlayerId,
   } = useMatchStore();
 
-  const [lockedSets, setLockedSets] = useState<Set<number>>(new Set());
-
   const insertEvent = useInsertEvent(matchId, match?.current_set || 1);
   const undoEvent = useUndoEvent(matchId, match?.current_set || 1);
   const startMatch = useStartMatch(matchId);
@@ -158,17 +156,6 @@ export default function LiveMatchPage({
   }, [events, setEvents]);
 
   const handleSetLocked = useCallback((setNumber: number) => {
-    // Update local locked sets state
-    setLockedSets((prev) => {
-      const newLocked = new Set(prev);
-      if (newLocked.has(setNumber)) {
-        newLocked.delete(setNumber);
-      } else {
-        newLocked.add(setNumber);
-      }
-      return newLocked;
-    });
-
     // Sync set scores to Supabase when a set is locked
     const currentSets = useMatchStore.getState().sets;
     const setsToSync = currentSets
@@ -344,22 +331,11 @@ export default function LiveMatchPage({
               onUpdateScore={handleUpdateScore}
               onSetLocked={handleSetLocked}
               onMatchComplete={handleMatchComplete}
+              onAdvanceSet={handleAdvanceSet}
+              currentSet={match.current_set}
             />
 
             <div className="flex gap-2 px-4 pb-2">
-              {/* Siguiente Set button - show when current set is locked and not last set */}
-              {lockedSets.has(match.current_set) && match.current_set < (match.format === "best_of_5" ? 5 : 3) && (
-                <button
-                  onClick={() => handleAdvanceSet(match.current_set)}
-                  disabled={advanceSet.isPending}
-                  className="px-3 py-1.5 bg-primary text-primary-foreground text-sm rounded-lg hover:bg-primary/90 disabled:opacity-50 flex items-center gap-1.5"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-                  </svg>
-                  Siguiente Set
-                </button>
-              )}
               <button
                 onClick={handleFinishManual}
                 disabled={completeMatch.isPending}
