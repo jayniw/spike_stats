@@ -16,8 +16,6 @@ interface ScoreboardProps {
   onUpdateScore: (setNumber: number, isHome: boolean, delta: number) => void;
   onSetLocked?: (setNumber: number) => void;
   onMatchComplete?: (matchState: MatchState) => void;
-  onAdvanceSet?: (currentSet: number) => void;
-  currentSet?: number;
 }
 
 function ScoreBox({
@@ -130,8 +128,6 @@ export function Scoreboard({
   onUpdateScore,
   onSetLocked,
   onMatchComplete,
-  onAdvanceSet,
-  currentSet,
 }: ScoreboardProps) {
   const [lockedSets, setLockedSets] = useState<Set<number>>(new Set());
   const [matchState, setMatchState] = useState<MatchState | null>(null);
@@ -172,68 +168,43 @@ export function Scoreboard({
     return matchState.enabledSets.has(setNumber) && !matchState.isMatchComplete;
   };
 
-  // Determine if "Siguiente Set" button should be shown
-  const showAdvanceButton = () => {
-    if (!matchState || !currentSet || matchState.isMatchComplete) return false;
-    // Show if current set is locked/completed and there's a next set available
-    return lockedSets.has(currentSet) && matchState.enabledSets.has(currentSet + 1);
-  };
-
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-between px-4 py-2">
-        {/* Home team */}
-        <div className="flex flex-col items-start gap-1">
-          <span className="text-xs text-muted-foreground">{homeTeamName}</span>
-          <div className="flex gap-1">
-            {sets.map((set) => (
-              <ScoreBox
-                key={set.id}
-                value={set.points_home}
-                locked={lockedSets.has(set.set_number)}
-                disabled={!isSetEnabled(set.set_number)}
-                onIncrement={() => onUpdateScore(set.set_number, true, 1)}
-                onDecrement={() => onUpdateScore(set.set_number, true, -1)}
-                onToggleLock={() => handleToggleLock(set.set_number)}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Away team */}
-        <div className="flex flex-col items-start gap-1">
-          <span className="text-xs text-muted-foreground">{awayTeamName}</span>
-          <div className="flex gap-1">
-            {sets.map((set) => (
-              <ScoreBox
-                key={set.id}
-                value={set.points_away}
-                locked={lockedSets.has(set.set_number)}
-                disabled={!isSetEnabled(set.set_number)}
-                onIncrement={() => onUpdateScore(set.set_number, false, 1)}
-                onDecrement={() => onUpdateScore(set.set_number, false, -1)}
-                onToggleLock={() => handleToggleLock(set.set_number)}
-              />
-            ))}
-          </div>
+    <div className="flex items-center justify-between px-4 py-2">
+      {/* Home team */}
+      <div className="flex flex-col items-start gap-1">
+        <span className="text-xs text-muted-foreground">{homeTeamName}</span>
+        <div className="flex gap-1">
+          {sets.map((set) => (
+            <ScoreBox
+              key={set.id}
+              value={set.points_home}
+              locked={lockedSets.has(set.set_number)}
+              disabled={!isSetEnabled(set.set_number)}
+              onIncrement={() => onUpdateScore(set.set_number, true, 1)}
+              onDecrement={() => onUpdateScore(set.set_number, true, -1)}
+              onToggleLock={() => handleToggleLock(set.set_number)}
+            />
+          ))}
         </div>
       </div>
 
-      {/* Siguiente Set button */}
-      {showAdvanceButton() && onAdvanceSet && (
-        <div className="flex justify-center px-4">
-          <button
-            onClick={() => onAdvanceSet(currentSet!)}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-2"
-            disabled={!showAdvanceButton()}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-            </svg>
-            Siguiente Set
-          </button>
+      {/* Away team */}
+      <div className="flex flex-col items-start gap-1">
+        <span className="text-xs text-muted-foreground">{awayTeamName}</span>
+        <div className="flex gap-1">
+          {sets.map((set) => (
+            <ScoreBox
+              key={set.id}
+              value={set.points_away}
+              locked={lockedSets.has(set.set_number)}
+              disabled={!isSetEnabled(set.set_number)}
+              onIncrement={() => onUpdateScore(set.set_number, false, 1)}
+              onDecrement={() => onUpdateScore(set.set_number, false, -1)}
+              onToggleLock={() => handleToggleLock(set.set_number)}
+            />
+          ))}
         </div>
-      )}
+      </div>
     </div>
   );
 }
