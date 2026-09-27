@@ -205,6 +205,12 @@ export interface PlayerMatchStatsDetail {
     defenses_total: number;
     defenses_digs: number;
     defenses_errors: number;
+
+    // Saque
+    serves_total: number;
+    serves_aces: number;
+    serves_errors: number;
+    serves_in_play: number;
 }
 
 export interface TeamMatchStatsDetail {
@@ -248,6 +254,11 @@ export interface PlayerSeasonStatsDetail {
     defenses_total: number;
     defenses_digs: number;
     defenses_errors: number;
+    // Saque
+    serves_total: number;
+    serves_aces: number;
+    serves_errors: number;
+    serves_in_play: number;
 }
 
 // ============================================

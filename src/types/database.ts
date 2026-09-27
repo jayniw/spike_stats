@@ -414,6 +414,10 @@ export type Functions = {
             defenses_total: number;
             defenses_digs: number;
             defenses_errors: number;
+            serves_total: number;
+            serves_aces: number;
+            serves_errors: number;
+            serves_in_play: number;
         }[];
     };
     get_team_match_stats: {
@@ -456,6 +460,10 @@ export type Functions = {
             defenses_total: number;
             defenses_digs: number;
             defenses_errors: number;
+            serves_total: number;
+            serves_aces: number;
+            serves_errors: number;
+            serves_in_play: number;
         }[];
     };
     recalculate_set_score: {

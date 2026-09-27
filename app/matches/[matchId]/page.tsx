@@ -2,7 +2,7 @@
 
 import { use, useEffect, useState, useCallback } from "react";
 import { useMatch, useMatchSets, useMatchEvents } from "@/hooks/useMatch";
-import { useInsertEvent, useUndoEvent, useStartMatch, useCompleteMatch, useAbandonMatch, useSyncSetScore, useReopenMatch } from "@/hooks/useMatchActions";
+import { useInsertEvent, useUndoEvent, useStartMatch, useCompleteMatch, useAbandonMatch, useSyncSetScore, useReopenMatch, useAdvanceSet } from "@/hooks/useMatchActions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -81,6 +81,7 @@ export default function LiveMatchPage({
   const abandonMatch = useAbandonMatch(matchId);
   const syncSetScore = useSyncSetScore(matchId);
   const reopenMatch = useReopenMatch(matchId);
+  const advanceSet = useAdvanceSet(matchId);
 
   const [showCompleteDialog, setShowCompleteDialog] = useState(false);
   const [showAbandonDialog, setShowAbandonDialog] = useState(false);
@@ -258,6 +259,15 @@ export default function LiveMatchPage({
     reopenMatch.mutate();
   };
 
+  const handleAdvanceSet = (currentSet: number) => {
+    advanceSet.mutate(currentSet, {
+      onSuccess: (nextSet) => {
+        // Update local store to immediately reflect the change
+        setCurrentSet(nextSet);
+      },
+    });
+  };
+
   const handleUpdateScore = (setNumber: number, isHome: boolean, delta: number) => {
     const newSets = storeSets.map((set) => {
       if (set.set_number !== setNumber) return set;
@@ -321,6 +331,8 @@ export default function LiveMatchPage({
               onUpdateScore={handleUpdateScore}
               onSetLocked={handleSetLocked}
               onMatchComplete={handleMatchComplete}
+              onAdvanceSet={handleAdvanceSet}
+              currentSet={match.current_set}
             />
 
             <div className="flex gap-2 px-4 pb-2">

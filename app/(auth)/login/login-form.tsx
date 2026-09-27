@@ -6,6 +6,31 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+// Mapa de errores de Supabase a mensajes amigables en español
+const ERROR_MAP: Record<string, string> = {
+  "Failed to fetch": "El servicio de autenticación no está disponible. Por favor, intente más tarde o contacte al administrador.",
+  "Invalid login credentials": "Email o contraseña incorrectos. Verifique sus credenciales.",
+  "Email not confirmed": "Su cuenta no ha sido confirmada. Revise su email para el enlace de confirmación.",
+  "Too many requests": "Demasiados intentos fallidos. Espere unos minutos antes de volver a intentar.",
+  "User not found": "No existe una cuenta con este email.",
+  "Invalid email": "El formato del email no es válido.",
+};
+
+function getFriendlyError(error: Error): string {
+  // Log técnico para debugging
+  console.error("[Auth Error]", error.message, error);
+  
+  // Buscar mensaje mapeado
+  for (const [key, friendly] of Object.entries(ERROR_MAP)) {
+    if (error.message.includes(key)) {
+      return friendly;
+    }
+  }
+  
+  // Fallback genérico
+  return "Error de conexión. Verifique su internet e intente nuevamente.";
+}
+
 export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,7 +52,7 @@ export function LoginForm() {
     });
 
     if (authError) {
-      setError(authError.message);
+      setError(getFriendlyError(authError));
       setLoading(false);
       return;
     }

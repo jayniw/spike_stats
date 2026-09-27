@@ -242,3 +242,45 @@ export function useReopenMatch(matchId: string) {
     },
   });
 }
+
+export function useAdvanceSet(matchId: string) {
+  const queryClient = useQueryClient();
+  const supabase = createClient();
+
+  return useMutation({
+    mutationFn: async (currentSet: number) => {
+      const nextSet = currentSet + 1;
+      
+      // Verify the next set exists and current set is completed/locked
+      const { data: match } = await supabase
+        .from("matches")
+        .select("format, current_set")
+        .eq("id", matchId)
+        .single();
+      
+      if (!match) throw new Error("Partido no encontrado");
+      
+      const maxSets = match.format === "best_of_5" ? 5 : 3;
+      if (nextSet > maxSets) {
+        throw new Error("No hay más sets disponibles");
+      }
+
+      const { error } = await supabase
+        .from("matches")
+        .update({
+          current_set: nextSet,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", matchId);
+
+      if (error) throw error;
+      
+      return nextSet;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: matchKeys.detail(matchId) });
+      queryClient.invalidateQueries({ queryKey: matchKeys.sets(matchId) });
+      queryClient.invalidateQueries({ queryKey: matchKeys.events(matchId) }); // Will be invalidated per set via useMatchEvents
+    },
+  });
+}

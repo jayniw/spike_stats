@@ -37,6 +37,10 @@ function aggregateSeasonStats(stats: PlayerSeasonStats[]) {
       defenses_total: 0,
       defenses_digs: 0,
       defenses_errors: 0,
+      serves_total: 0,
+      serves_aces: 0,
+      serves_errors: 0,
+      serves_in_play: 0,
     };
   }
 
@@ -65,6 +69,10 @@ function aggregateSeasonStats(stats: PlayerSeasonStats[]) {
       defenses_total: acc.defenses_total + s.defenses_total,
       defenses_digs: acc.defenses_digs + s.defenses_digs,
       defenses_errors: acc.defenses_errors + s.defenses_errors,
+      serves_total: acc.serves_total + s.serves_total,
+      serves_aces: acc.serves_aces + s.serves_aces,
+      serves_errors: acc.serves_errors + s.serves_errors,
+      serves_in_play: acc.serves_in_play + s.serves_in_play,
     }),
     {
       receptions_total: 0,
@@ -90,6 +98,10 @@ function aggregateSeasonStats(stats: PlayerSeasonStats[]) {
       defenses_total: 0,
       defenses_digs: 0,
       defenses_errors: 0,
+      serves_total: 0,
+      serves_aces: 0,
+      serves_errors: 0,
+      serves_in_play: 0,
     }
   );
 
@@ -178,6 +190,13 @@ export function PlayerDetailCards({ stats, isLoading }: PlayerDetailCardsProps) 
   ];
 
   const serveMetrics = [
+    { label: "Total", value: detail.serves_total ?? 0 },
+    { label: "Aces", value: detail.serves_aces ?? 0, percentage: pct(detail.serves_aces ?? 0, detail.serves_total ?? 0) },
+    { label: "Errores", value: detail.serves_errors ?? 0, percentage: pct(detail.serves_errors ?? 0, detail.serves_total ?? 0) },
+    { label: "En Juego", value: detail.serves_in_play ?? 0, percentage: pct(detail.serves_in_play ?? 0, detail.serves_total ?? 0) },
+  ];
+
+  const setMetrics = [
     { label: "Total", value: detail.sets_total },
     { label: "Asistencias", value: detail.sets_assists, percentage: pct(detail.sets_assists, detail.sets_total) },
     { label: "Errores", value: detail.sets_errors, percentage: pct(detail.sets_errors, detail.sets_total) },
@@ -214,9 +233,16 @@ export function PlayerDetailCards({ stats, isLoading }: PlayerDetailCardsProps) 
 
       <div>
         <div className="flex items-center gap-2 mb-2">
-          <h3 className="font-medium">Saque / Colocación</h3>
+          <h3 className="font-medium">Saque</h3>
         </div>
-        <StatCard title="Saque / Colocación" metrics={serveMetrics} />
+        <StatCard title="Saque" metrics={serveMetrics} />
+      </div>
+
+      <div>
+        <div className="flex items-center gap-2 mb-2">
+          <h3 className="font-medium">Colocación</h3>
+        </div>
+        <StatCard title="Colocación" metrics={setMetrics} />
       </div>
     </div>
   );
