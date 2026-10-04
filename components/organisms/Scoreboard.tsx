@@ -41,7 +41,8 @@ function ScoreBox({
   const [swipeHint, setSwipeHint] = useState<"down" | null>(null);
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (disabled && !locked) return;
+    // Allow touch on unlocked sets (locked = completed, shouldn't modify)
+    if (locked) return;
     didLongPress.current = false;
     touchStartY.current = e.touches[0].clientY;
 
@@ -53,7 +54,9 @@ function ScoreBox({
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (disabled || touchStartY.current === null) return;
+    // Allow swipe on unlocked sets (locked = completed, shouldn't decrement)
+    // Use locked instead of disabled to avoid timing issues with matchState
+    if (locked || touchStartY.current === null) return;
 
     const deltaY = e.touches[0].clientY - touchStartY.current;
 
@@ -64,7 +67,8 @@ function ScoreBox({
       }
     }
 
-    if (deltaY > 20) {
+    // Reduced threshold from 20 to 15 for easier swipe on mobile
+    if (deltaY > 15) {
       setSwipeHint("down");
     } else {
       setSwipeHint(null);
