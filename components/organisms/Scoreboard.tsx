@@ -81,7 +81,10 @@ function ScoreBox({
       longPressTimer.current = null;
     }
 
+    console.log('[ScoreBox] handleTouchEnd', { swipeHint, value, locked, hintActive: swipeHint === "down" });
+
     if (swipeHint === "down" && value > 0 && !locked) {
+      console.log('[ScoreBox] Decrementing score');
       onDecrement();
     }
 
@@ -118,7 +121,7 @@ function ScoreBox({
         <span className="absolute -top-1 -right-1 text-[10px]">🔒</span>
       )}
       {swipeHint === "down" && (
-        <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[9px] text-destructive whitespace-nowrap">
+        <span className="absolute -top-7 left-1/2 -translate-x-1/2 text-[10px] text-destructive whitespace-nowrap bg-destructive/90 text-destructive-foreground px-1.5 py-0.5 rounded">
           ↓ -1
         </span>
       )}
