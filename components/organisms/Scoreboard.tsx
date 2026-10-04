@@ -115,8 +115,30 @@ export function Scoreboard({
   onAdvanceSet,
   currentSet,
 }: ScoreboardProps) {
-  const [lockedSets, setLockedSets] = useState<Set<number>>(new Set());
+  // Initialize lockedSets from sets data: lock sets that are already complete per FIVB rules
+  const initialLockedSets = useCallback(() => {
+    const locked = new Set<number>();
+    sets.forEach((set) => {
+      const { complete } = isSetComplete(
+        set.points_home,
+        set.points_away,
+        set.set_number,
+        match.format
+      );
+      if (complete) {
+        locked.add(set.set_number);
+      }
+    });
+    return locked;
+  }, [sets, match.format]);
+
+  const [lockedSets, setLockedSets] = useState<Set<number>>(() => initialLockedSets());
   const [matchState, setMatchState] = useState<MatchState | null>(null);
+
+  // Re-initialize lockedSets when sets data changes (e.g., on page load)
+  useEffect(() => {
+    setLockedSets(initialLockedSets());
+  }, [initialLockedSets]);
 
   // Calculate match state whenever locked sets or sets change
   useEffect(() => {
