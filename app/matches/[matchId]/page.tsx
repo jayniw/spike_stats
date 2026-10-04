@@ -2,7 +2,7 @@
 
 import { use, useEffect, useState, useCallback } from "react";
 import { useMatch, useMatchSets, useMatchEvents } from "@/hooks/useMatch";
-import { useInsertEvent, useUndoEvent, useStartMatch, useCompleteMatch, useAbandonMatch, useSyncSetScore, useReopenMatch, useAdvanceSet } from "@/hooks/useMatchActions";
+import { useInsertEvent, useUndoEvent, useStartMatch, useCompleteMatch, useAbandonMatch, useSyncSetScore, useReopenMatch, useAdvanceSet, useChangeSet } from "@/hooks/useMatchActions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -82,6 +82,7 @@ export default function LiveMatchPage({
   const syncSetScore = useSyncSetScore(matchId);
   const reopenMatch = useReopenMatch(matchId);
   const advanceSet = useAdvanceSet(matchId);
+  const changeSet = useChangeSet(matchId);
 
   const [showCompleteDialog, setShowCompleteDialog] = useState(false);
   const [showAbandonDialog, setShowAbandonDialog] = useState(false);
@@ -268,6 +269,16 @@ export default function LiveMatchPage({
     });
   };
 
+  const handleBackSet = (currentSet: number) => {
+    const prevSet = currentSet - 1;
+    if (prevSet < 1) return;
+    changeSet.mutate(prevSet, {
+      onSuccess: (targetSet) => {
+        setCurrentSet(targetSet);
+      },
+    });
+  };
+
   const handleUpdateScore = (setNumber: number, isHome: boolean, delta: number) => {
     const newSets = storeSets.map((set) => {
       if (set.set_number !== setNumber) return set;
@@ -332,6 +343,7 @@ export default function LiveMatchPage({
               onSetLocked={handleSetLocked}
               onMatchComplete={handleMatchComplete}
               onAdvanceSet={handleAdvanceSet}
+              onBackSet={handleBackSet}
               currentSet={match.current_set}
             />
 

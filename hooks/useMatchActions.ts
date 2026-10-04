@@ -284,3 +284,43 @@ export function useAdvanceSet(matchId: string) {
     },
   });
 }
+
+export function useChangeSet(matchId: string) {
+  const queryClient = useQueryClient();
+  const supabase = createClient();
+
+  return useMutation({
+    mutationFn: async (targetSet: number) => {
+      // Verify the target set is valid
+      const { data: match } = await supabase
+        .from("matches")
+        .select("format, current_set")
+        .eq("id", matchId)
+        .single();
+      
+      if (!match) throw new Error("Partido no encontrado");
+      
+      const maxSets = match.format === "best_of_5" ? 5 : 3;
+      if (targetSet < 1 || targetSet > maxSets) {
+        throw new Error(`Set inválido: debe ser entre 1 y ${maxSets}`);
+      }
+
+      const { error } = await supabase
+        .from("matches")
+        .update({
+          current_set: targetSet,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", matchId);
+
+      if (error) throw error;
+      
+      return targetSet;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: matchKeys.detail(matchId) });
+      queryClient.invalidateQueries({ queryKey: matchKeys.sets(matchId) });
+      queryClient.invalidateQueries({ queryKey: matchKeys.events(matchId) });
+    },
+  });
+}

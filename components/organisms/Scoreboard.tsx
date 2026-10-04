@@ -17,6 +17,7 @@ interface ScoreboardProps {
   onSetLocked?: (setNumber: number) => void;
   onMatchComplete?: (matchState: MatchState) => void;
   onAdvanceSet?: (currentSet: number) => void;
+  onBackSet?: (currentSet: number) => void;
   currentSet?: number;
 }
 
@@ -113,6 +114,7 @@ export function Scoreboard({
   onSetLocked,
   onMatchComplete,
   onAdvanceSet,
+  onBackSet,
   currentSet,
 }: ScoreboardProps) {
   // Initialize lockedSets from sets data: lock sets that are already complete per FIVB rules
@@ -201,9 +203,14 @@ export function Scoreboard({
 
   // Handle back click: unlock current set and go to previous
   const handleBackClick = useCallback((setNumber: number) => {
-    if (setNumber <= 1) return; // Can't go back from set 1
+    console.log('[handleBackClick] Called with setNumber:', setNumber);
+    if (setNumber <= 1) {
+      console.log('[handleBackClick] Cannot go back from set 1');
+      return; // Can't go back from set 1
+    }
 
     const prevSet = setNumber - 1;
+    console.log('[handleBackClick] Going back to set:', prevSet);
 
     // Unlock current set
     setLockedSets((prev) => {
@@ -212,11 +219,14 @@ export function Scoreboard({
       return newLocked;
     });
 
-    // Go back to previous set
-    if (onAdvanceSet) {
-      onAdvanceSet(prevSet);
+    // Go back to previous set using onBackSet
+    if (onBackSet) {
+      console.log('[handleBackClick] Calling onBackSet with:', prevSet);
+      onBackSet(prevSet);
+    } else {
+      console.log('[handleBackClick] onBackSet not available!');
     }
-  }, [onAdvanceSet]);
+  }, [onBackSet]);
 
   // Center button component with long press for back
   function CenterSetButton({
@@ -239,15 +249,18 @@ export function Scoreboard({
 
     const handleTouchStart = () => {
       // Allow long press when current is locked (to go back) OR when prev is locked (to go back from current)
-      if (!locked && !prevLocked) return;
+      if (!locked && !prevLocked) {
+        console.log('[CenterButton] Long press blocked:', { locked, prevLocked });
+        return;
+      }
       didLongPress.current = false;
 
       longPressTimer.current = setTimeout(() => {
-        console.log('[CenterButton] Long press fired - going back');
+        console.log('[CenterButton] Long press FIRED - calling onBack()');
         didLongPress.current = true;
         onBack();
         longPressTimer.current = null;
-      }, 600);
+      }, 400); // Reduced from 600ms to 400ms
     };
 
     const handleTouchEnd = () => {
