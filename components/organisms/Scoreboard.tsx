@@ -177,6 +177,95 @@ export function Scoreboard({
     return lockedSets.has(setNumber) && matchState.enabledSets.has(setNumber + 1);
   };
 
+  // Handle back click: unlock current set and go to previous
+  const handleBackClick = useCallback((setNumber: number) => {
+    if (setNumber <= 1) return; // Can't go back from set 1
+
+    const prevSet = setNumber - 1;
+
+    // Unlock current set
+    setLockedSets((prev) => {
+      const newLocked = new Set(prev);
+      newLocked.delete(setNumber);
+      return newLocked;
+    });
+
+    // Go back to previous set
+    if (onAdvanceSet) {
+      onAdvanceSet(prevSet);
+    }
+  }, [onAdvanceSet]);
+
+  // Center button component with long press for back
+  function CenterSetButton({
+    currentSet,
+    locked,
+    canAdvance,
+    onAdvance,
+    onBack,
+  }: {
+    currentSet: number;
+    locked: boolean;
+    canAdvance: boolean;
+    onAdvance: () => void;
+    onBack: () => void;
+  }) {
+    const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+    const didLongPress = useRef(false);
+
+    const handleTouchStart = () => {
+      if (!locked) return; // Only allow long press when locked
+      didLongPress.current = false;
+
+      longPressTimer.current = setTimeout(() => {
+        console.log('[CenterButton] Long press fired - going back');
+        didLongPress.current = true;
+        onBack();
+        longPressTimer.current = null;
+      }, 600);
+    };
+
+    const handleTouchEnd = () => {
+      if (longPressTimer.current) {
+        clearTimeout(longPressTimer.current);
+        longPressTimer.current = null;
+      }
+    };
+
+    const handleClick = () => {
+      if (didLongPress.current) return;
+      if (locked && canAdvance) {
+        onAdvance();
+      }
+    };
+
+    return (
+      <button
+        onClick={handleClick}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        className={cn(
+          "w-[42px] h-[42px] rounded-lg font-bold transition-all select-none touch-manipulation flex items-center justify-center",
+          locked
+            ? canAdvance
+              ? "bg-amber-500 text-white hover:bg-amber-600 active:scale-95 cursor-pointer"
+              : "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
+            : "bg-muted text-foreground cursor-default"
+        )}
+        aria-label={locked ? (canAdvance ? `Avanzar al set ${currentSet + 1}` : "Set completado") : "Set actual"}
+      >
+        {locked && canAdvance ? (
+          <span className="text-2xl">››</span>
+        ) : (
+          <span className="text-3xl">{currentSet}</span>
+        )}
+        {locked && !canAdvance && (
+          <span className="absolute -top-1 -right-1 text-[10px]">🔒</span>
+        )}
+      </button>
+    );
+  }
+
   // Find current set data
   const currentSetData = sets.find((s) => s.set_number === currentSet);
 
@@ -202,27 +291,13 @@ export function Scoreboard({
       {/* Center: Current set indicator / validate & advance button */}
       <div className="flex flex-col items-center gap-1 px-4">
         {currentSetData && (
-          <button
-            onClick={() => handleCenterClick(currentSet!)}
-            className={cn(
-              "w-[42px] h-[42px] rounded-lg font-bold transition-all select-none touch-manipulation flex items-center justify-center",
-              lockedSets.has(currentSet ?? 0)
-                ? showAdvance(currentSet ?? 0)
-                  ? "bg-amber-500 text-white hover:bg-amber-600 active:scale-95 cursor-pointer"
-                  : "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
-                : "bg-muted text-foreground cursor-default"
-            )}
-            aria-label={lockedSets.has(currentSet ?? 0) ? (showAdvance(currentSet ?? 0) ? `Avanzar al set ${currentSet! + 1}` : "Set completado") : "Set actual"}
-          >
-            {lockedSets.has(currentSet ?? 0) && showAdvance(currentSet ?? 0) ? (
-              <span className="text-2xl">››</span>
-            ) : (
-              <span className="text-3xl">{currentSet}</span>
-            )}
-            {lockedSets.has(currentSet ?? 0) && !showAdvance(currentSet ?? 0) && (
-              <span className="absolute -top-1 -right-1 text-[10px]">🔒</span>
-            )}
-          </button>
+          <CenterSetButton
+            currentSet={currentSet!}
+            locked={lockedSets.has(currentSet!)}
+            canAdvance={showAdvance(currentSet!)}
+            onAdvance={() => handleCenterClick(currentSet!)}
+            onBack={() => handleBackClick(currentSet!)}
+          />
         )}
       </div>
 
