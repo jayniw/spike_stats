@@ -225,18 +225,21 @@ export function Scoreboard({
     canAdvance,
     onAdvance,
     onBack,
+    prevLocked,
   }: {
     currentSet: number;
     locked: boolean;
     canAdvance: boolean;
     onAdvance: () => void;
     onBack: () => void;
+    prevLocked: boolean;
   }) {
     const longPressTimer = useRef<NodeJS.Timeout | null>(null);
     const didLongPress = useRef(false);
 
     const handleTouchStart = () => {
-      if (!locked) return; // Only allow long press when locked
+      // Allow long press when current is locked (to go back) OR when prev is locked (to go back from current)
+      if (!locked && !prevLocked) return;
       didLongPress.current = false;
 
       longPressTimer.current = setTimeout(() => {
@@ -316,6 +319,7 @@ export function Scoreboard({
           <CenterSetButton
             currentSet={currentSet!}
             locked={lockedSets.has(currentSet!)}
+            prevLocked={currentSet! > 1 && lockedSets.has(currentSet! - 1)}
             canAdvance={showAdvance(currentSet!)}
             onAdvance={() => handleCenterClick(currentSet!)}
             onBack={() => handleBackClick(currentSet!)}
