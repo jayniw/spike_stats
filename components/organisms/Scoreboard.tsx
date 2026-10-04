@@ -214,7 +214,7 @@ export function Scoreboard({
             onClick={handleAdvanceClick}
             disabled={!canAdvanceSet() || !onAdvanceSet}
             className={cn(
-              "w-20 h-20 rounded-lg font-bold transition-all select-none touch-manipulation flex items-center justify-center",
+              "w-[42px] h-[42px] rounded-lg font-bold transition-all select-none touch-manipulation flex items-center justify-center",
               canAdvanceSet()
                 ? "bg-amber-500 text-white hover:bg-amber-600 active:scale-95 cursor-pointer"
                 : lockedSets.has(currentSet ?? 0)
@@ -224,9 +224,9 @@ export function Scoreboard({
             aria-label={canAdvanceSet() && currentSet ? `Avanzar al set ${currentSet + 1}` : "Set actual"}
           >
             {canAdvanceSet() ? (
-              <span className="text-3xl">››</span>
+              <span className="text-2xl">››</span>
             ) : (
-              <span className="text-4xl">{currentSet}</span>
+              <span className="text-3xl">{currentSet}</span>
             )}
             {lockedSets.has(currentSet ?? 0) && !canAdvanceSet() && (
               <span className="absolute -top-1 -right-1 text-[10px]">🔒</span>
